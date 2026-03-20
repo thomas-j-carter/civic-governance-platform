@@ -455,4 +455,648 @@ model IdempotencyRecord {
   @@map("idempotency_record")
   @@unique([actorPersonId, operationName, idempotencyKey], map: "idempotency_record_actor_operation_key_uidx")
   @@index([createdAt], map: "idempotency_record_created_at_idx")
+
+}
+
+enum MembershipApplicationState {
+  draft
+  submitted
+  under_review
+  returned_for_revision
+  approved
+  rejected
+  withdrawn
+}
+
+enum MembershipState {
+  pending_activation
+  active
+  suspended
+  ended
+}
+
+enum EntityStatus {
+  draft
+  active
+  inactive
+  archived
+}
+
+enum ProposalState {
+  draft
+  submitted
+  admissibility_review
+  admitted
+  rejected
+  amendment_window
+  scheduled
+  voting_open
+  voting_closed
+  certified
+  ratified
+  failed
+  withdrawn
+  published
+  archived
+}
+
+enum AmendmentState {
+  draft
+  submitted
+  under_review
+  accepted
+  rejected
+  withdrawn
+  incorporated
+  archived
+}
+
+enum VoteState {
+  configured
+  open
+  closed
+  tallied
+  certified
+  voided
+}
+
+enum OutcomeState {
+  pending
+  certified
+  ratified
+  failed
+  withdrawn
+  superseded
+  archived
+}
+
+enum CertificationState {
+  pending
+  under_review
+  certified
+  rejected
+  superseded
+}
+
+enum RecordStatus {
+  draft
+  under_review
+  official
+  published
+  superseded
+  archived
+}
+
+enum PublicationState {
+  not_publishable
+  eligible
+  scheduled
+  published
+  withdrawn
+  corrected
+  superseded
+  archived
+}
+
+enum PublicationScope {
+  public
+  members_only
+  internal_staff
+  restricted_governance
+  private_unpublished
+}
+
+enum PublicationChannel {
+  website_page
+  register
+  gazette
+  member_portal
+  internal_dashboard
+  email
+  document_download
+}
+
+enum PolicyState {
+  draft
+  active
+  superseded
+  archived
+}
+
+enum OfficeAssignmentState {
+  vacant
+  nominated
+  under_review
+  appointed
+  active
+  ended
+  removed
+}
+
+enum SessionState {
+  draft
+  scheduled
+  in_session
+  concluded
+  archived
+}
+
+enum AuditActionResult {
+  success
+  denied
+  failure
+}
+
+model User {
+  id                String                       @id @default(cuid())
+  externalAuthId    String?                      @unique
+  email             String?                      @unique
+  displayName       String?
+  givenName         String?
+  familyName        String?
+  isSystemActor     Boolean                      @default(false)
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+
+  roleAssignments   UserRoleAssignment[]
+  membershipApps    MembershipApplication[]
+  memberships       MembershipRecord[]
+  bodyMemberships   GovernanceBodyMembership[]
+  officeAssignments OfficeAssignment[]
+  auditEvents       AuditEvent[]                 @relation("AuditActor")
+  certifications    Certification[]              @relation("CertificationActor")
+  createdVersions   RecordVersion[]              @relation("RecordVersionCreator")
+
+  @@index([email])
+  @@index([externalAuthId])
+}
+
+model ApplicationRole {
+  id          String               @id @default(cuid())
+  key         String               @unique
+  name        String
+  description String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  assignments UserRoleAssignment[]
+}
+
+model UserRoleAssignment {
+  id        String          @id @default(cuid())
+  userId    String
+  roleId    String
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime        @default(now())
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      ApplicationRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([roleId])
+}
+
+model MembershipApplication {
+  id                       String                     @id @default(cuid())
+  applicantUserId          String
+  state                    MembershipApplicationState
+  membershipClassRequested String?
+  summary                  String?
+  submittedAt              DateTime?
+  reviewedAt               DateTime?
+  decisionAt               DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+
+  applicant                User                       @relation(fields: [applicantUserId], references: [id], onDelete: Restrict)
+  reviews                  MembershipApplicationReview[]
+  membershipDecision       MembershipDecision?
+  auditEvents              AuditEvent[]               @relation("AuditMembershipApplication")
+
+  @@index([applicantUserId])
+  @@index([state])
+}
+
+model MembershipApplicationReview {
+  id             String                 @id @default(cuid())
+  applicationId  String
+  reviewerUserId String
+  reviewState    String
+  notes          String?
+  createdAt      DateTime               @default(now())
+
+  application    MembershipApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewer       User                   @relation(fields: [reviewerUserId], references: [id], onDelete: Restrict)
+
+  @@index([applicationId])
+  @@index([reviewerUserId])
+}
+
+model MembershipDecision {
+  id             String                 @id @default(cuid())
+  applicationId  String                 @unique
+  decidedByUserId String?
+  decisionCode   String
+  reason         String?
+  decidedAt      DateTime               @default(now())
+  createdAt      DateTime               @default(now())
+
+  application    MembershipApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  decidedBy      User?                  @relation(fields: [decidedByUserId], references: [id], onDelete: SetNull)
+  membership     MembershipRecord?
+
+  @@index([decisionCode])
+}
+
+model MembershipRecord {
+  id              String               @id @default(cuid())
+  userId          String
+  decisionId      String?              @unique
+  state           MembershipState
+  membershipClass String?
+  effectiveAt     DateTime?
+  endedAt         DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  decision        MembershipDecision?  @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+  statusEvents    MembershipStatusEvent[]
+
+  @@index([userId])
+  @@index([state])
+}
+
+model MembershipStatusEvent {
+  id            String           @id @default(cuid())
+  membershipId  String
+  fromState     MembershipState?
+  toState       MembershipState
+  reason        String?
+  actedByUserId String?
+  createdAt     DateTime         @default(now())
+
+  membership    MembershipRecord @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  actedBy       User?            @relation(fields: [actedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([membershipId])
+}
+
+model GovernanceBody {
+  id              String                    @id @default(cuid())
+  slug            String                    @unique
+  name            String
+  description     String?
+  status          EntityStatus
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  offices         Office[]
+  memberships     GovernanceBodyMembership[]
+  sessions        GovernanceSession[]
+  proposals       Proposal[]
+
+  @@index([status])
+}
+
+model GovernanceBodyMembership {
+  id           String          @id @default(cuid())
+  bodyId        String
+  userId        String
+  roleLabel     String?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime        @default(now())
+
+  body          GovernanceBody  @relation(fields: [bodyId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([bodyId])
+  @@index([userId])
+}
+
+model Office {
+  id              String              @id @default(cuid())
+  bodyId           String?
+  slug            String              @unique
+  name            String
+  description     String?
+  status          EntityStatus
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  body            GovernanceBody?     @relation(fields: [bodyId], references: [id], onDelete: SetNull)
+  assignments     OfficeAssignment[]
+
+  @@index([bodyId])
+  @@index([status])
+}
+
+model OfficeAssignment {
+  id              String                 @id @default(cuid())
+  officeId         String
+  userId           String
+  state           OfficeAssignmentState
+  startsAt        DateTime?
+  endsAt          DateTime?
+  appointedAt     DateTime?
+  removedAt       DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  office          Office                 @relation(fields: [officeId], references: [id], onDelete: Restrict)
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([officeId])
+  @@index([userId])
+  @@index([state])
+}
+
+model GovernanceSession {
+  id                String           @id @default(cuid())
+  bodyId             String?
+  title             String
+  description       String?
+  scheduledStartAt  DateTime?
+  scheduledEndAt    DateTime?
+  state             SessionState
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  body              GovernanceBody?  @relation(fields: [bodyId], references: [id], onDelete: SetNull)
+  agendaItems       AgendaItem[]
+  proposals         Proposal[]
+
+  @@index([bodyId])
+  @@index([state])
+}
+
+model AgendaItem {
+  id           String             @id @default(cuid())
+  sessionId     String
+  proposalId    String?
+  title        String
+  description  String?
+  sortOrder    Int                @default(0)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  session      GovernanceSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  proposal     Proposal?          @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([proposalId])
+}
+
+model Proposal {
+  id             String         @id @default(cuid())
+  bodyId          String?
+  sessionId       String?
+  ruleVersionId   String?
+  title          String
+  summary        String?
+  state          ProposalState
+  createdByUserId String?
+  submittedAt    DateTime?
+  admittedAt     DateTime?
+  votingOpenedAt DateTime?
+  votingClosedAt DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  body           GovernanceBody?    @relation(fields: [bodyId], references: [id], onDelete: SetNull)
+  session        GovernanceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  ruleVersion    PolicyVersion?     @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+  amendments     Amendment[]
+  votes          Vote[]
+  outcomes       Outcome[]
+  records        Record[]           @relation("ProposalRecords")
+
+  @@index([bodyId])
+  @@index([sessionId])
+  @@index([ruleVersionId])
+  @@index([state])
+}
+
+model Amendment {
+  id              String          @id @default(cuid())
+  proposalId       String
+  title           String
+  summary         String?
+  state           AmendmentState
+  createdByUserId String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  proposal        Proposal        @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId])
+  @@index([state])
+}
+
+model Vote {
+  id             String       @id @default(cuid())
+  proposalId      String
+  ruleVersionId   String?
+  state          VoteState
+  opensAt        DateTime?
+  closesAt       DateTime?
+  talliedAt      DateTime?
+  certifiedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  proposal       Proposal     @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  ruleVersion    PolicyVersion? @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+  ballots        Ballot[]
+  outcome        Outcome?
+
+  @@index([proposalId])
+  @@index([ruleVersionId])
+  @@index([state])
+}
+
+model Ballot {
+  id             String    @id @default(cuid())
+  voteId          String
+  voterUserId     String
+  ballotValue    String
+  castAt         DateTime  @default(now())
+
+  vote           Vote      @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  voter          User      @relation(fields: [voterUserId], references: [id], onDelete: Restrict)
+
+  @@unique([voteId, voterUserId])
+  @@index([voteId])
+  @@index([voterUserId])
+}
+
+model Outcome {
+  id               String            @id @default(cuid())
+  proposalId        String
+  voteId            String?           @unique
+  certificationId   String?           @unique
+  ruleVersionId     String?
+  state            OutcomeState
+  resultCode       String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  proposal         Proposal          @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  vote             Vote?             @relation(fields: [voteId], references: [id], onDelete: SetNull)
+  certification    Certification?    @relation(fields: [certificationId], references: [id], onDelete: SetNull)
+  ruleVersion      PolicyVersion?    @relation(fields: [ruleVersionId], references: [id], onDelete: SetNull)
+
+  @@index([proposalId])
+  @@index([ruleVersionId])
+  @@index([state])
+}
+
+model Certification {
+  id               String             @id @default(cuid())
+  state            CertificationState
+  scopeType        String
+  scopeId          String
+  certifiedByUserId String?
+  basis            String?
+  notes            String?
+  certifiedAt      DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  certifiedBy      User?              @relation("CertificationActor", fields: [certifiedByUserId], references: [id], onDelete: SetNull)
+  recordVersions   RecordVersion[]
+  outcome          Outcome?
+
+  @@index([scopeType, scopeId])
+  @@index([state])
+}
+
+model Record {
+  id                String          @id @default(cuid())
+  recordType        String
+  status            RecordStatus
+  sourceEntityType  String?
+  sourceEntityId    String?
+  currentVersionId  String?         @unique
+  supersededById    String?
+  archivedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  currentVersion    RecordVersion?  @relation("CurrentRecordVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions          RecordVersion[] @relation("AllRecordVersions")
+  publications      Publication[]
+  supersededBy      Record?         @relation("RecordSupersession", fields: [supersededById], references: [id], onDelete: SetNull)
+  supersedes        Record[]        @relation("RecordSupersession")
+  proposal          Proposal[]      @relation("ProposalRecords")
+
+  @@index([recordType])
+  @@index([status])
+  @@index([sourceEntityType, sourceEntityId])
+}
+
+model RecordVersion {
+  id               String          @id @default(cuid())
+  recordId         String
+  versionNumber    Int
+  status           RecordStatus
+  title            String?
+  summary          String?
+  contentMarkdown  String?
+  payloadJson      Json?
+  contentHash      String?
+  changeSummary    String?
+  certificationId  String?
+  createdByUserId  String?
+  createdAt        DateTime        @default(now())
+
+  record           Record          @relation("AllRecordVersions", fields: [recordId], references: [id], onDelete: Cascade)
+  certification    Certification?  @relation(fields: [certificationId], references: [id], onDelete: SetNull)
+  createdBy        User?           @relation("RecordVersionCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  currentForRecord Record?         @relation("CurrentRecordVersion")
+
+  @@unique([recordId, versionNumber])
+  @@index([recordId])
+  @@index([status])
+}
+
+model Publication {
+  id               String             @id @default(cuid())
+  recordId         String?
+  recordVersionId  String?
+  state            PublicationState
+  scope            PublicationScope
+  channel          PublicationChannel
+  effectiveAt      DateTime?
+  publishedAt      DateTime?
+  withdrawnAt      DateTime?
+  createdByUserId  String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  record           Record?            @relation(fields: [recordId], references: [id], onDelete: SetNull)
+  recordVersion    RecordVersion?     @relation(fields: [recordVersionId], references: [id], onDelete: SetNull)
+  createdBy        User?              @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([recordId])
+  @@index([recordVersionId])
+  @@index([state])
+  @@index([scope])
+  @@index([channel])
+}
+
+model PolicyDefinition {
+  id            String          @id @default(cuid())
+  key           String          @unique
+  name          String
+  description   String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  versions      PolicyVersion[]
+}
+
+model PolicyVersion {
+  id            String          @id @default(cuid())
+  policyId       String
+  version       Int
+  state         PolicyState
+  payloadJson   Json
+  effectiveAt   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  policy        PolicyDefinition @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  proposals     Proposal[]
+  votes         Vote[]
+  outcomes      Outcome[]
+
+  @@unique([policyId, version])
+  @@index([policyId])
+  @@index([state])
+}
+
+model AuditEvent {
+  id                         String             @id @default(cuid())
+  correlationId              String?
+  actorUserId                String?
+  actionType                 String
+  targetType                 String
+  targetId                   String?
+  result                     AuditActionResult
+  reason                     String?
+  metadataJson               Json?
+  membershipApplicationId    String?
+  createdAt                  DateTime           @default(now())
+
+  actor                      User?              @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  membershipApplication      MembershipApplication? @relation("AuditMembershipApplication", fields: [membershipApplicationId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([actionType])
+  @@index([targetType, targetId])
+  @@index([correlationId])
+  @@index([createdAt])
 }
