@@ -1,37 +1,25 @@
-Completion countdown: 3 → 2 → 1
+# Execution blueprint for the Ardtire digital governance platform
 
-Principal-level execution blueprint for the Ardtire digital governance platform
-
-3) Strategic frame
+## 1) Strategic frame
 
 Treat this as a constitutional operations platform, not a website project.
 
 That means the build order is:
 
 1. institutional model
-
-
 2. governance workflows
-
-
 3. authority and records integrity
-
-
 4. public/member/admin surfaces
-
-
 5. automation and scale
 
 
 
-The principal-engineer objective is:
-
-make Ardtire operable as a trustworthy digital institution with explicit rules, durable records, and auditable outcomes.
+The principal-engineer objective is to make Ardtire operable as a trustworthy digital institution with explicit rules, durable records, and auditable outcomes.
 
 
 ---
 
-2) Target product shape
+## 2) Target product shape
 
 Use a four-surface model.
 
@@ -39,33 +27,26 @@ A. Public institutional surface
 
 Purpose:
 
-present Ardtire publicly
-
-publish official notices, governance outcomes, registers, gazette items, constitutional texts, officer pages, diaries/news
+- present Ardtire publicly
+- publish official notices, governance outcomes, registers, gazette items, constitutional texts, officer pages, diaries/news
 
 
 Characteristics:
 
-public read access
-
-CMS-backed editorial content
-
-selected canonical governance records rendered publicly
+- public read access
+- CMS-backed editorial content
+- selected canonical governance records rendered publicly
 
 
 B. Member surface
 
 Purpose:
 
-applications
-
-membership status
-
-member-facing notices
-
-proposal review/voting access where authorized
-
-internal records visibility by scope
+- applications
+- membership status
+- member-facing notices
+- proposal review/voting access where authorized
+- internal records visibility by scope
 
 
 Characteristics:
@@ -130,7 +111,7 @@ database-backed source of truth
 
 1) Recommended architecture
 
-Based on your current direction, the principal-level shape I would recommend is:
+Based on the current direction, the shape I recommend is:
 
 Applications
 
@@ -181,8 +162,6 @@ All authoritative governance state changes flow through gov-api.
 Not through CMS.
 Not directly through the web app.
 Not via random scripts.
-
-That one rule will save you enormous future pain.
 
 
 ---
@@ -790,7 +769,7 @@ incident response
 environment discipline
 
 
-A principal engineer keeps these concerns separate even if the same human wears multiple hats.
+Keep these concerns separate even if the same human wears multiple hats.
 
 
 ---
@@ -923,7 +902,7 @@ full test coverage for critical workflows
 
 Definition of done for each major slice
 
-A principal engineer will not call a slice “done” just because the UI exists.
+We will not call a slice “done” just because the UI exists.
 
 A slice is done when:
 
@@ -982,7 +961,6 @@ Mitigation: strong audit logs, event traces, reason fields, review queues.
 
 ---
 
-My strongest principal-level recommendation
 
 For Ardtire specifically, the smartest path is:
 
