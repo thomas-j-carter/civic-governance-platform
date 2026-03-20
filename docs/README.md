@@ -1,219 +1,243 @@
-# Documentation Map
+# Ardtire Civic Governance Platform
+
+The Ardtire Civic Governance Platform is the canonical digital governance system for the Ardtire Society. It administers identity, membership, proposals, ballots, certifications, publications, records, and institutional transparency in a structured, auditable, and evolvable way. The platform is built on a domain-first, documentation-first, and audit-first engineering model: domain rules are written down explicitly, architectural decisions are recorded with rationale, and documentation is treated as part of the product itself.
 
-This directory contains the canonical, derived, and educational documentation for the Ardtire Civic Governance Platform.
+---
+
+## Current status
 
-The documentation system is structured deliberately. Different folders serve different purposes. The goal is to prevent ambiguity about where truth lives and to keep product intent, domain semantics, technical design, operational procedure, and AI context aligned over time.
+Active structured definition and implementation. Documentation and implementation proceed in lockstep. Some documentation intentionally precedes its corresponding code — well-defined future intent is preferable to undocumented improvisation.
+
+| Area | Status |
+|------|--------|
+| Domain model and Prisma schema | Complete |
+| CMS (Payload CMS) | Scaffolded and runnable |
+| Governance API (Hono) | Routes defined; implementation in progress |
+| Web application (TanStack Start + SolidJS) | Scaffolded |
+| Shared packages (contracts, domain, gov-client, workflows) | Scaffolded |
+| Documentation system | Canonical structure in place; content filling in |
 
-## Documentation philosophy
+---
 
-The platform is too semantically rich and procedurally important to be governed by source code alone.
+## High-level architecture
 
-This repository therefore treats documentation as part of the platform itself.
+The platform is a **pnpm monorepo** with three applications and four shared packages.
 
-The documentation system is designed to answer five different classes of questions:
+```
+┌──────────────────────────────────────────────────────┐
+│          apps/web (TanStack Start + SolidJS)         │
+│   governance, member, admin surfaces                 │
+└────────────────────┬─────────────────────────────────┘
+                     │ packages/gov-client
+┌────────────────────▼─────────────────────────────────┐
+│               apps/gov-api (Hono)                    │
+│   auth, membership, governance bodies, proposals,    │
+│   amendments, sessions, agendas, offices, ballots    │
+└────────────────────┬─────────────────────────────────┘
+                     │ Prisma / PostgreSQL
+┌────────────────────▼─────────────────────────────────┐
+│               apps/cms (Payload CMS)                 │
+│   content management, gazette, publication pipeline  │
+└──────────────────────────────────────────────────────┘
+```
+
+Cross-cutting:
+- `packages/contracts` — typed API/service contracts
+- `packages/domain` — canonical domain models and enums
+- `packages/workflows` — business process orchestration
+- `tools/` — repo validation, context compilation, client codegen
+
+---
+
+## Apps and packages
+
+| Name | Path | Purpose |
+|------|------|---------|
+| web | `apps/web` | TanStack Start + SolidJS frontend — member, governance, and admin surfaces |
+| gov-api | `apps/gov-api` | Hono REST API — all governance business logic and data access |
+| cms | `apps/cms` | Payload CMS — content management and publication pipeline; runs on port 3001 |
+| contracts | `packages/contracts` | TypeScript service contracts shared between gov-api and gov-client |
+| domain | `packages/domain` | Canonical domain models, enums, and shared types |
+| gov-client | `packages/gov-client` | Typed API client and server functions for the web app |
+| workflows | `packages/workflows` | Amendment and governance workflow definitions |
+
+---
+
+## Quickstart for local development
+
+**Prerequisites:** Node 20+, pnpm 10+, PostgreSQL
+
+```bash
+# 1. Clone and install
+git clone <repo-url>
+cd civic-governance-platform
+pnpm install
+
+# 2. Configure environment
+cp apps/cms/.env.example apps/cms/.env        # set DATABASE_URL and secrets
+cp apps/gov-api/.env.example apps/gov-api/.env
+
+# 3. Set up the database
+pnpm --filter gov-api exec prisma migrate dev
+
+# 4. Start applications
+pnpm --filter cms dev          # CMS on http://localhost:3001
+pnpm --filter gov-api dev      # Governance API
+pnpm --filter web dev          # Web frontend
+```
+
+See `docs/07-runbooks/` for detailed local development, seed data, and troubleshooting procedures.
+
+---
+
+## Basic commands
+
+```bash
+# Install all dependencies
+pnpm install
+
+# Run an app in development mode
+pnpm --filter cms dev
+pnpm --filter gov-api dev
+pnpm --filter web dev
+
+# Run tests
+pnpm --filter cms test
+pnpm --filter cms test:watch
+
+# Type-check
+pnpm --filter cms typecheck
+pnpm --filter gov-api typecheck
+
+# Build for production
+pnpm --filter cms build
+
+# Validate repository structure
+pnpm validate:repo
 
-1. why does this platform exist
-2. what should it do
-3. what rules govern it
-4. how is it built and operated
-5. how should humans and AI continue the work correctly
+# Regenerate AI context artifacts
+pnpm compile:context
 
-## Directory overview
+# Regenerate the gov-client from API contracts
+pnpm codegen:gov-client
+```
 
-## `00-vision/`
-Strategic and foundational intent.
+---
 
-This folder explains why the platform exists, what it is intended to achieve, what constraints it operates under, and what is explicitly out of scope.
+## Link map — most important docs
 
-Use this folder when answering:
-- why are we building this
-- what problem are we solving
-- what outcomes matter most
+| What you want to know | Where to look |
+|-----------------------|---------------|
+| Why does this platform exist? | [`docs/00-vision/`](00-vision/) |
+| What does the product do? | [`docs/01-product/`](01-product/) |
+| What do domain terms mean? | [`docs/02-domain/`](02-domain/) · [`docs/GLOSSARY.md`](GLOSSARY.md) |
+| How is the system designed? | [`docs/03-architecture/`](03-architecture/) |
+| Why was X decided? | [`docs/04-decisions/`](04-decisions/) |
+| What should this feature do? | [`docs/05-specs/`](05-specs/) |
+| How do I call the API? | [`docs/06-api/`](06-api/) |
+| How do I run an operational task? | [`docs/07-runbooks/`](07-runbooks/) |
+| How is the system monitored? | [`docs/08-operations/`](08-operations/) |
+| What is the current project state? (AI handoff) | [`docs/09-ai-context/`](09-ai-context/) |
+| What changed? | [`docs/10-changelog/`](10-changelog/) |
+| Full documentation map | [`docs/README.md`](README.md) ← you are here |
+| Authority hierarchy | [`docs/SOURCE_OF_TRUTH_POLICY.md`](SOURCE_OF_TRUTH_POLICY.md) |
+| How to contribute | [`CONTRIBUTING.md`](../CONTRIBUTING.md) |
+| API route manifest | [`docs/implementation/gov-api-route-manifest.md`](implementation/gov-api-route-manifest.md) |
 
-## `01-product/`
-Product-level behavior and surface area.
+---
 
-This folder explains what the product does from a product and user-flow perspective.
+## Supported environments
 
-Use this folder when answering:
-- what are the major features
-- what routes exist
-- what journeys do users follow
-- what is in MVP
+| Environment | Notes |
+|-------------|-------|
+| Local development | macOS, Linux; Node 20+, pnpm 10+, PostgreSQL |
+| CI | GitHub Actions; Node 20, Python 3.11 |
+| Staging / production | Not yet provisioned |
 
-## `02-domain/`
-Canonical domain semantics.
+---
 
-This folder is one of the most important folders in the repository. It defines the meaning of actors, authority, membership, governance, publication, records, state machines, invariants, and other domain rules.
+## Glossary of core terms
 
-Use this folder when answering:
-- what does this term mean
-- what rules must always hold
-- what lifecycle governs this entity
-- what authority is required for this action
+| Term | Meaning |
+|------|---------|
+| **Actor** | A person, system, service, or institutional role that performs actions in the platform |
+| **Authority** | A recognized institutional grant of ability — broader than a technical permission |
+| **Bounded context** | A boundary within which a model and vocabulary are consistently defined |
+| **Governance body** | A formal committee or assembly with defined authority and membership |
+| **Invariant** | A rule that must always hold, enforced by the platform |
+| **Lifecycle** | The full set of states an entity moves through, with defined transitions |
+| **Proposal** | A formal motion that follows a defined drafting, reading, voting, and publication workflow |
+| **Record** | A persistent institutional artifact subject to versioning and retention rules |
+| **Role** | A named classification used for authorization and authority resolution |
+| **Workflow** | A defined sequence of actions, transitions, and guards for a business process |
 
-## `03-architecture/`
-Technical system design.
+Full glossary: [`docs/GLOSSARY.md`](GLOSSARY.md) and [`docs/02-domain/glossary.md`](02-domain/glossary.md).
 
-This folder defines the architecture of the platform: system context, components, boundaries, trust model, identity and access architecture, data strategy, async model, integrations, and operationally relevant technical constraints.
+---
 
-Use this folder when answering:
-- how is the system structured
-- where does this responsibility belong
-- what are the technical boundaries
-- how do requests and data move through the platform
+## Repository conventions
 
-## `04-decisions/`
-Architectural Decision Records.
+- **Documentation-first.** Domain rules, architectural decisions, and feature specs are written before or alongside implementation. See [`docs/DOCUMENTATION_GOVERNANCE.md`](DOCUMENTATION_GOVERNANCE.md).
+- **Source-of-truth hierarchy.** Not all documents are equally authoritative. See [`docs/SOURCE_OF_TRUTH_POLICY.md`](SOURCE_OF_TRUTH_POLICY.md).
+- **ADRs for consequential decisions.** Any significant architectural or domain choice gets a record in `docs/04-decisions/`.
+- **Specs for user-visible behavior.** Feature work is grounded in `docs/05-specs/`.
+- **Commit discipline.** Commits are focused and use semantic prefixes: `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
+- **Change manifests.** Meaningful changes are recorded in `.changes/` and linked to docs, AI context, and changelog.
+- **AI assistance is permitted but constrained.** AI-generated content must align with canonical docs and must not invent domain rules or architecture. See [`docs/09-ai-context/AI_RULES.md`](09-ai-context/AI_RULES.md).
 
-This folder records consequential decisions and their rationale.
+---
 
-Use this folder when answering:
-- why was this approach chosen
-- what alternatives were considered
-- what decision is currently governing
+## Top-level route and app map
 
-## `05-specs/`
-Implementation-facing feature specifications.
+| Surface | Entry point |
+|---------|-------------|
+| Member portal | `apps/web/src/` — `/member/*` |
+| Governance surfaces | `apps/web/src/` — `/governance/*` |
+| Admin surfaces | `apps/web/src/` — `/admin/*` |
+| REST API | `apps/gov-api/src/app.ts` — see route manifest |
+| CMS | `apps/cms/src/` — Payload CMS admin at `/admin` |
 
-This folder defines feature behavior in an implementable way. Specs should connect product and domain intent to code and tests.
+Full API route inventory: [`docs/implementation/gov-api-route-manifest.md`](implementation/gov-api-route-manifest.md).
 
-Use this folder when answering:
-- what exactly should this feature do
-- what validations and permissions apply
-- what acceptance criteria must be satisfied
+---
 
-## `06-api/`
-API contracts and conventions.
+## Where decisions and specs live
 
-This folder contains API overview, conventions, authentication model, error model, versioning policy, cross-cutting API behaviors, and machine-readable contracts.
+- **Architectural Decision Records** — `docs/04-decisions/` — one file per decision, with context, options, and rationale
+- **Feature specs** — `docs/05-specs/` — implementable behavior definitions with acceptance criteria
+- **Domain rules** — `docs/02-domain/` — canonical source for what domain terms mean and what invariants hold
+- **API contracts** — `docs/06-api/` — resource model, error model, authentication, versioning
 
-Use this folder when answering:
-- how should clients call the platform
-- what resource model exists
-- what errors and DTOs should be expected
+---
 
-## `07-runbooks/`
-Task-oriented procedures.
+## What should I read first?
 
-These are step-by-step instructions for recurring operational tasks such as local development, deployments, rollback, secret rotation, restore, and incident response.
+If you are new to this repository, read in this order:
 
-Use this folder when answering:
-- how do I perform this operational task
-- what exact steps should I follow
-- how do I verify success safely
+1. This file
+2. [`docs/SOURCE_OF_TRUTH_POLICY.md`](SOURCE_OF_TRUTH_POLICY.md) — understand document authority before reading anything else
+3. [`docs/00-vision/`](00-vision/) — why the platform exists
+4. [`docs/02-domain/`](02-domain/) — what the domain terms mean
+5. [`docs/03-architecture/`](03-architecture/) — how the system is structured
+6. [`docs/09-ai-context/PROJECT_CONTEXT.md`](09-ai-context/PROJECT_CONTEXT.md) — current implementation state
 
-## `08-operations/`
-Steady-state operational policy.
+Then move into the specific feature, domain, or architectural area you are working on.
 
-This folder defines how the system is monitored, logged, audited, backed up, retained, and run in practice.
+---
 
-Use this folder when answering:
-- how do we operate this system over time
-- what is the observability model
-- what is the incident model
-- what are the reliability expectations
+## Contribution entry point
 
-## `09-ai-context/`
-AI-oriented derived context.
+Before making any non-trivial change:
 
-This folder contains AI-friendly summaries, inventories, state snapshots, and continuation artifacts. These are important, but they are generally derived from canonical docs and repo state rather than being the primary source of truth.
+1. Read the relevant canonical docs for the affected area
+2. Confirm whether a spec is needed (`docs/05-specs/`)
+3. Confirm whether an ADR is needed (`docs/04-decisions/`)
+4. Implement code, update impacted documentation, and record the change in `.changes/`
 
-Use this folder when:
-- handing off to a new AI session
-- reestablishing implementation context
-- summarizing current state
-- guiding AI-generated work within repository rules
+Full workflow: [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 
-## `10-changelog/`
-Structured change history.
+---
 
-This folder captures human-readable change records and releases over time.
+## License
 
-Use this folder when answering:
-- what changed
-- when did it change
-- what is unreleased
-- what shipped in a given release
-
-## `tutorials/`
-Guided educational material.
-
-This folder is for onboarding and teaching. Tutorials are intentionally non-canonical. They explain how to work with the system, but they do not define official truth by themselves.
-
-Use this folder when:
-- onboarding a contributor
-- demonstrating a workflow
-- teaching the preferred implementation approach
-
-## Related non-doc folders
-
-## `blog/`
-Long-form narrative or outward-facing explanatory writing.
-
-## `journal/`
-Internal narrative build history, reflections, and day-by-day engineering notes.
-
-## `.changes/`
-Structured change manifests that connect implementation changes to documentation, AI context, and changelog updates.
-
-## How to read this repository
-
-A new engineer should usually read in this order:
-
-1. `README.md`
-2. `docs/SOURCE_OF_TRUTH_POLICY.md`
-3. `docs/DOCUMENTATION_GOVERNANCE.md`
-4. `docs/00-vision/README.md`
-5. `docs/01-product/README.md`
-6. `docs/02-domain/README.md`
-7. `docs/03-architecture/README.md`
-8. `docs/09-ai-context/PROJECT_CONTEXT.md`
-
-Then move into the specific feature, domain, or architectural area being worked on.
-
-## Canonical vs derived vs narrative
-
-The most important rule in this documentation system is that not every document has equal authority.
-
-Canonical truth primarily lives in:
-
-- `README.md`
-- `docs/00-vision/**`
-- `docs/01-product/**`
-- `docs/02-domain/**`
-- `docs/03-architecture/**`
-- `docs/04-decisions/**`
-- `docs/05-specs/**`
-- `docs/06-api/**`
-- `docs/07-runbooks/**`
-- `docs/08-operations/**`
-
-Derived truth-supporting material lives in:
-
-- `docs/09-ai-context/**`
-- `docs/10-changelog/**`
-
-Narrative and educational content lives in:
-
-- `docs/tutorials/**`
-- `blog/**`
-- `journal/**`
-
-See `SOURCE_OF_TRUTH_POLICY.md` for the definitive policy.
-
-## Expected maintenance model
-
-Documentation is expected to evolve with the codebase.
-
-For meaningful changes:
-- update the relevant canonical docs
-- update or create a change manifest
-- refresh derived AI context where needed
-- preserve consistency across related areas
-
-The documentation system should get clearer over time, not noisier.
-
-## Final principle
-
-This documentation tree exists to reduce ambiguity, reduce drift, improve review quality, preserve institutional memory, and enable disciplined development of a complex civic governance platform.
+Formal license and usage terms not yet finalized. This repository is private until a license is applied.
