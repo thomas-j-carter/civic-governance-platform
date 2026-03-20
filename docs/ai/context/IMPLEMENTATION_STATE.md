@@ -47,6 +47,16 @@
 - Entry creation
 - Issue publication
 
+### Other
+- Governance workflow foundations
+- Identity and authority persistence
+- Auth boundary with JWT/JWKS design
+- Person and member administration
+- Role assignment, delegation, and office-holder administration
+- Governance-body and office administration
+- Official record layer
+- Gazette issue and entry publication layer
+
 ## Current Position
 
 The full governance → publication pipeline foundation is implemented.
@@ -55,13 +65,20 @@ System now supports:
 
 proposal → ballot → certification → record → gazette
 
+Completed through:
+- Batch 23A — records domain + certification-to-record promotion
+- Batch 23B — gazette issue + entry administration and publication pipeline
+
 ## Next Batch
 
-Batch 23C — orchestration layer
-
-- end-to-end pipeline handlers
-- guided promotion workflows
-- publication readiness checks
+Batch 23C — orchestration layer and handlers for:
+  - certification -> record
+  - record officialization
+  - gazette issue entry scheduling
+  - publication preparation
+  - end-to-end pipeline handlers
+  - guided promotion workflows
+  - publication readiness checks
 
 ## Completion Estimate
 

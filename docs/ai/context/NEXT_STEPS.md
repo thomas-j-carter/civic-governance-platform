@@ -6,6 +6,15 @@
 - Certification → Record → Officialize pipeline
 - Record → Gazette entry pipeline
 - One-command workflows
+- guided pipeline commands
+- certification -> record -> officialize flows
+- record -> gazette entry flows
+- publication readiness checks
+
+## After That
+- rule engine strengthening
+- remaining institutional completion
+- operational hardening
 
 ## Near-Term
 
