@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "repoRoot": { "type": "string" },
+    "docsRoot": { "type": "string" },
+    "aiContextRoot": { "type": "string" },
+    "changelogRoot": { "type": "string" },
+    "tutorialsRoot": { "type": "string" },
+    "blogRoot": { "type": "string" },
+    "journalRoot": { "type": "string" },
+    "changesRoot": { "type": "string" },
+    "outputRoot": { "type": "string" },
+    "snapshotsRoot": { "type": "string" },
+    "includeGlobs": { "type": "array", "items": { "type": "string" } },
+    "excludeGlobs": { "type": "array", "items": { "type": "string" } },
+    "requiredDocs": { "type": "array", "items": { "type": "string" } },
+    "sourceOfTruthRoots": { "type": "array", "items": { "type": "string" } }
+  }
+}

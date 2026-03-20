@@ -1,0 +1,36 @@
+{
+  "name": "@repo/docs-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Documentation automation engine for inventory, manifests, impact analysis, AI context compilation, and validation.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "docs-engine": "dist/cli/main.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "dev": "tsx src/cli/main.ts",
+    "inventory": "tsx src/cli/main.ts inventory",
+    "manifest": "tsx src/cli/main.ts manifest",
+    "impact": "tsx src/cli/main.ts impact",
+    "compile-ai": "tsx src/cli/main.ts compile-ai",
+    "changelog": "tsx src/cli/main.ts changelog",
+    "tutorial-draft": "tsx src/cli/main.ts tutorial-draft",
+    "validate": "tsx src/cli/main.ts validate",
+    "watch": "tsx src/cli/main.ts watch"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "chokidar": "^4.0.3",
+    "commander": "^13.1.0",
+    "fast-glob": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}

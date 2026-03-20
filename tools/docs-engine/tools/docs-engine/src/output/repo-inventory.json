@@ -1,0 +1,82 @@
+{
+  "generatedAt": "2026-03-20T18:47:47.911Z",
+  "repoRoot": "/data/data/com.termux/files/home/docsengine/tools/docs-engine",
+  "packages": [],
+  "apps": [],
+  "docs": [],
+  "routes": [],
+  "envVars": [],
+  "apiEndpoints": [],
+  "entities": [
+    {
+      "name": "ApiEndpointInventory",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ChangeManifest",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ChangeStatus",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ChangeType",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "DocsIndex",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "DriftReport",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "EngineConfig",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "EntityInventory",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "EnvVarInventory",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ImpactReport",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ImpactRule",
+      "file": "src/analyzers/impact-rules.ts",
+      "source": "type"
+    },
+    {
+      "name": "RepoInventory",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "RouteInventory",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    },
+    {
+      "name": "ValidationReport",
+      "file": "src/shared/types.ts",
+      "source": "type"
+    }
+  ]
+}

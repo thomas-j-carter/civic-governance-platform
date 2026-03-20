@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["generatedAt", "changedFiles", "impactedDocs", "adrSuggested", "reasons"],
+  "properties": {
+    "generatedAt": { "type": "string" },
+    "changedFiles": { "type": "array", "items": { "type": "string" } },
+    "impactedDocs": { "type": "array", "items": { "type": "string" } },
+    "adrSuggested": { "type": "boolean" },
+    "reasons": { "type": "array", "items": { "type": "object" } }
+  }
+}

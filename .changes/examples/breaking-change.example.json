@@ -1,0 +1,23 @@
+{
+  "id": "20260320T103000Z-breaking-change",
+  "date": "2026-03-20T10:30:00Z",
+  "type": "breaking-change",
+  "status": "draft",
+  "summary": "Example breaking-change change.",
+  "domains": [
+    "platform"
+  ],
+  "files_changed": [
+    "apps/example/src/index.ts"
+  ],
+  "doc_impacts": [
+    "docs/10-changelog/unreleased.md"
+  ],
+  "breaking": true,
+  "migration_required": false,
+  "user_visible": true,
+  "ops_impact": false,
+  "notes": [
+    "Example manifest file."
+  ]
+}

@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "id", "date", "type", "status", "summary", "domains", "files_changed", "doc_impacts",
+        "breaking", "migration_required", "user_visible", "ops_impact"
+    ],
+    "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "date": { "type": "string", "format": "date-time" },
+        "type": {
+            "type": "string",
+            "enum": ["feature", "fix", "refactor", "docs", "test", "chore", "perf", "security", "breaking-change"]
+        },
+        "status": { "type": "string", "enum": ["draft", "ready", "released"] },
+        "summary": { "type": "string", "minLength": 1 },
+        "domains": { "type": "array", "items": { "type": "string" } },
+        "apps": { "type": "array", "items": { "type": "string" } },
+        "packages": { "type": "array", "items": { "type": "string" } },
+        "files_changed": { "type": "array", "items": { "type": "string" } },
+        "doc_impacts": { "type": "array", "items": { "type": "string" } },
+        "adr_impacts": { "type": "array", "items": { "type": "string" } },
+        "breaking": { "type": "boolean" },
+        "migration_required": { "type": "boolean" },
+        "user_visible": { "type": "boolean" },
+        "ops_impact": { "type": "boolean" },
+        "notes": { "type": "array", "items": { "type": "string" } }
+    }
+}
