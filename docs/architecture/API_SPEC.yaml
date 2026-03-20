@@ -1,0 +1,975 @@
+openapi: 3.1.0
+info:
+  title: Ardtire Governance API
+  version: 0.1.0
+  summary: Canonical governance mutation and institutional records API
+  description: >
+    Initial canonical baseline for the Ardtire governance API.
+    This API is the authoritative application boundary for institutional state changes.
+
+servers:
+  - url: https://gov-api.example.com
+    description: Production placeholder
+  - url: http://localhost:3002
+    description: Local development
+
+tags:
+  - name: Health
+  - name: Auth Context
+  - name: Membership Applications
+  - name: Membership
+  - name: Governance Bodies
+  - name: Offices
+  - name: Sessions
+  - name: Proposals
+  - name: Amendments
+  - name: Votes
+  - name: Outcomes
+  - name: Records
+  - name: Publications
+  - name: Policies
+  - name: Audit
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    PageMeta:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+
+    AuditRef:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        actorUserId:
+          type: string
+
+    MembershipApplication:
+      type: object
+      required: [id, state, applicantUserId, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        state:
+          type: string
+          enum: [draft, submitted, under_review, returned_for_revision, approved, rejected, withdrawn]
+        applicantUserId:
+          type: string
+        membershipClassRequested:
+          type: string
+        summary:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    MembershipRecord:
+      type: object
+      required: [id, userId, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        state:
+          type: string
+          enum: [pending_activation, active, suspended, ended]
+        membershipClass:
+          type: string
+        effectiveAt:
+          type: string
+          format: date-time
+        endedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    GovernanceBody:
+      type: object
+      required: [id, slug, name, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, inactive, archived]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Office:
+      type: object
+      required: [id, slug, name, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        bodyId:
+          type: string
+          nullable: true
+        slug:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [draft, active, inactive, archived]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Session:
+      type: object
+      required: [id, title, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        bodyId:
+          type: string
+          nullable: true
+        title:
+          type: string
+        description:
+          type: string
+        scheduledStartAt:
+          type: string
+          format: date-time
+          nullable: true
+        scheduledEndAt:
+          type: string
+          format: date-time
+          nullable: true
+        state:
+          type: string
+          enum: [draft, scheduled, in_session, concluded, archived]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Proposal:
+      type: object
+      required: [id, title, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        bodyId:
+          type: string
+          nullable: true
+        sessionId:
+          type: string
+          nullable: true
+        title:
+          type: string
+        summary:
+          type: string
+        state:
+          type: string
+          enum:
+            [draft, submitted, admissibility_review, admitted, rejected, amendment_window, scheduled, voting_open, voting_closed, certified, ratified, failed, withdrawn, published, archived]
+        ruleVersionId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Amendment:
+      type: object
+      required: [id, proposalId, title, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        proposalId:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        state:
+          type: string
+          enum: [draft, submitted, under_review, accepted, rejected, withdrawn, incorporated, archived]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Vote:
+      type: object
+      required: [id, proposalId, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        proposalId:
+          type: string
+        state:
+          type: string
+          enum: [configured, open, closed, tallied, certified, voided]
+        opensAt:
+          type: string
+          format: date-time
+          nullable: true
+        closesAt:
+          type: string
+          format: date-time
+          nullable: true
+        ruleVersionId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Outcome:
+      type: object
+      required: [id, proposalId, state, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        proposalId:
+          type: string
+        voteId:
+          type: string
+          nullable: true
+        state:
+          type: string
+          enum: [pending, certified, ratified, failed, withdrawn, superseded, archived]
+        resultCode:
+          type: string
+          nullable: true
+        certificationId:
+          type: string
+          nullable: true
+        ruleVersionId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Record:
+      type: object
+      required: [id, recordType, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        recordType:
+          type: string
+        status:
+          type: string
+          enum: [draft, under_review, official, published, superseded, archived]
+        currentVersionId:
+          type: string
+          nullable: true
+        sourceEntityType:
+          type: string
+          nullable: true
+        sourceEntityId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    RecordVersion:
+      type: object
+      required: [id, recordId, versionNumber, status, createdAt]
+      properties:
+        id:
+          type: string
+        recordId:
+          type: string
+        versionNumber:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum: [draft, under_review, official, published, superseded, archived]
+        title:
+          type: string
+        summary:
+          type: string
+        contentMarkdown:
+          type: string
+          nullable: true
+        payloadJson:
+          type: object
+          additionalProperties: true
+        certificationId:
+          type: string
+          nullable: true
+        createdByUserId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    Publication:
+      type: object
+      required: [id, state, scope, channel, createdAt]
+      properties:
+        id:
+          type: string
+        recordId:
+          type: string
+          nullable: true
+        recordVersionId:
+          type: string
+          nullable: true
+        state:
+          type: string
+          enum: [not_publishable, eligible, scheduled, published, withdrawn, corrected, superseded, archived]
+        scope:
+          type: string
+          enum: [public, members_only, internal_staff, restricted_governance, private_unpublished]
+        channel:
+          type: string
+          enum: [website_page, register, gazette, member_portal, internal_dashboard, email, document_download]
+        effectiveAt:
+          type: string
+          format: date-time
+          nullable: true
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    PolicyVersion:
+      type: object
+      required: [id, policyType, version, state, createdAt]
+      properties:
+        id:
+          type: string
+        policyType:
+          type: string
+        version:
+          type: integer
+          minimum: 1
+        state:
+          type: string
+          enum: [draft, active, superseded, archived]
+        effectiveAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Read service health
+      security: []
+      responses:
+        "200":
+          description: OK
+
+  /auth/context:
+    get:
+      tags: [Auth Context]
+      summary: Read current actor context
+      responses:
+        "200":
+          description: Current actor context
+
+  /membership-applications:
+    get:
+      tags: [Membership Applications]
+      summary: List membership applications
+      responses:
+        "200":
+          description: Membership applications list
+    post:
+      tags: [Membership Applications]
+      summary: Create membership application draft
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                membershipClassRequested:
+                  type: string
+                summary:
+                  type: string
+      responses:
+        "201":
+          description: Created
+
+  /membership-applications/{applicationId}:
+    get:
+      tags: [Membership Applications]
+      summary: Read membership application
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Membership application
+
+  /membership-applications/{applicationId}/submit:
+    post:
+      tags: [Membership Applications]
+      summary: Submit membership application
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Submitted
+
+  /membership-applications/{applicationId}/start-review:
+    post:
+      tags: [Membership Applications]
+      summary: Start membership application review
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review started
+
+  /membership-applications/{applicationId}/return-for-revision:
+    post:
+      tags: [Membership Applications]
+      summary: Return membership application for revision
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Returned
+
+  /membership-applications/{applicationId}/approve:
+    post:
+      tags: [Membership Applications]
+      summary: Approve membership application
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Approved
+
+  /membership-applications/{applicationId}/reject:
+    post:
+      tags: [Membership Applications]
+      summary: Reject membership application
+      parameters:
+        - in: path
+          name: applicationId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Rejected
+
+  /memberships:
+    get:
+      tags: [Membership]
+      summary: List memberships
+      responses:
+        "200":
+          description: Memberships list
+
+  /memberships/{membershipId}:
+    get:
+      tags: [Membership]
+      summary: Read membership record
+      parameters:
+        - in: path
+          name: membershipId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Membership record
+
+  /memberships/{membershipId}/suspend:
+    post:
+      tags: [Membership]
+      summary: Suspend membership
+      parameters:
+        - in: path
+          name: membershipId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suspended
+
+  /memberships/{membershipId}/reinstate:
+    post:
+      tags: [Membership]
+      summary: Reinstate membership
+      parameters:
+        - in: path
+          name: membershipId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Reinstated
+
+  /governance/bodies:
+    get:
+      tags: [Governance Bodies]
+      summary: List governance bodies
+      responses:
+        "200":
+          description: Governance bodies
+    post:
+      tags: [Governance Bodies]
+      summary: Create governance body
+      responses:
+        "201":
+          description: Created
+
+  /governance/bodies/{bodyId}:
+    get:
+      tags: [Governance Bodies]
+      summary: Read governance body
+      parameters:
+        - in: path
+          name: bodyId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Governance body
+
+  /offices:
+    get:
+      tags: [Offices]
+      summary: List offices
+      responses:
+        "200":
+          description: Offices
+    post:
+      tags: [Offices]
+      summary: Create office
+      responses:
+        "201":
+          description: Created
+
+  /sessions:
+    get:
+      tags: [Sessions]
+      summary: List sessions
+      responses:
+        "200":
+          description: Sessions
+    post:
+      tags: [Sessions]
+      summary: Create session
+      responses:
+        "201":
+          description: Created
+
+  /proposals:
+    get:
+      tags: [Proposals]
+      summary: List proposals
+      responses:
+        "200":
+          description: Proposals
+    post:
+      tags: [Proposals]
+      summary: Create proposal draft
+      responses:
+        "201":
+          description: Created
+
+  /proposals/{proposalId}:
+    get:
+      tags: [Proposals]
+      summary: Read proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Proposal
+
+  /proposals/{proposalId}/submit:
+    post:
+      tags: [Proposals]
+      summary: Submit proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Submitted
+
+  /proposals/{proposalId}/start-admissibility-review:
+    post:
+      tags: [Proposals]
+      summary: Start admissibility review
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review started
+
+  /proposals/{proposalId}/admit:
+    post:
+      tags: [Proposals]
+      summary: Admit proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Admitted
+
+  /proposals/{proposalId}/reject:
+    post:
+      tags: [Proposals]
+      summary: Reject proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Rejected
+
+  /proposals/{proposalId}/schedule:
+    post:
+      tags: [Proposals]
+      summary: Schedule proposal
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scheduled
+
+  /proposals/{proposalId}/open-vote:
+    post:
+      tags: [Proposals]
+      summary: Open proposal vote
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vote opened
+
+  /proposals/{proposalId}/close-vote:
+    post:
+      tags: [Proposals]
+      summary: Close proposal vote
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vote closed
+
+  /proposals/{proposalId}/certify:
+    post:
+      tags: [Proposals]
+      summary: Certify proposal outcome
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Certified
+
+  /proposals/{proposalId}/publish:
+    post:
+      tags: [Proposals]
+      summary: Publish proposal outcome
+      parameters:
+        - in: path
+          name: proposalId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published
+
+  /amendments:
+    post:
+      tags: [Amendments]
+      summary: Create amendment draft
+      responses:
+        "201":
+          description: Created
+
+/votes/{voteId}:
+    get:
+      tags: [Votes]
+      summary: Read vote
+      parameters:
+        - in: path
+          name: voteId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vote
+
+  /votes/{voteId}/cast:
+    post:
+      tags: [Votes]
+      summary: Cast vote
+      parameters:
+        - in: path
+          name: voteId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Vote cast
+
+  /outcomes/{outcomeId}:
+    get:
+      tags: [Outcomes]
+      summary: Read outcome
+      parameters:
+        - in: path
+          name: outcomeId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Outcome
+
+  /records:
+    get:
+      tags: [Records]
+      summary: List records
+      responses:
+        "200":
+          description: Records
+
+  /records/{recordId}:
+    get:
+      tags: [Records]
+      summary: Read record
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Record
+
+  /records/{recordId}/versions:
+    post:
+      tags: [Records]
+      summary: Create record version
+      parameters:
+        - in: path
+          name: recordId
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Version created
+
+  /publications:
+    get:
+      tags: [Publications]
+      summary: List publications
+      responses:
+        "200":
+          description: Publications
+    post:
+      tags: [Publications]
+      summary: Create publication event
+      responses:
+        "201":
+          description: Created
+
+  /publications/{publicationId}/publish:
+    post:
+      tags: [Publications]
+      summary: Publish a scheduled or eligible publication
+      parameters:
+        - in: path
+          name: publicationId
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Published
+
+  /policies/versions:
+    get:
+      tags: [Policies]
+      summary: List policy versions
+      responses:
+        "200":
+          description: Policy versions
+
+  /audit/events:
+    get:
+      tags: [Audit]
+      summary: List audit events
+      responses:
+        "200":
+          description: Audit events
+
+x-notes:
+  implementation-status: initial baseline
+  design-principles:
+    - gov-api is the canonical mutation boundary
+    - officiality and publication are distinct
+    - workflow transitions are explicit endpoints or commands
+    - auditability is required for privileged and procedural actions
