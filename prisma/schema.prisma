@@ -1,0 +1,458 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Person {
+  id           String   @id @db.Uuid
+  displayName  String   @map("display_name")
+  primaryEmail String?  @map("primary_email")
+  givenName    String?  @map("given_name")
+  familyName   String?  @map("family_name")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("person")
+  @@index([primaryEmail], map: "person_primary_email_idx")
+}
+
+model PersonIdentityLink {
+  id        String   @id @db.Uuid
+  personId  String   @map("person_id")
+  issuer    String
+  subject   String
+  email     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("person_identity_link")
+  @@unique([issuer, subject], map: "person_identity_link_issuer_subject_uidx")
+  @@index([email], map: "person_identity_link_email_idx")
+  @@index([personId], map: "person_identity_link_person_id_idx")
+}
+
+model Member {
+  id                String    @id @db.Uuid
+  personId          String    @unique @map("person_id")
+  memberNumber      String?   @map("member_number")
+  membershipClassId String?   @map("membership_class_id")
+  status            String
+  admittedAt        DateTime? @map("admitted_at")
+  endedAt           DateTime? @map("ended_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("member")
+}
+
+model GovernanceBody {
+  id          String   @id @db.Uuid
+  code        String   @unique
+  name        String
+  description String?
+  bodyType    String   @map("body_type")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  offices     Office[]
+
+  @@map("governance_body")
+}
+
+model Office {
+  id               String    @id @db.Uuid
+  code             String    @unique
+  name             String
+  description      String?
+  governanceBodyId String?   @map("governance_body_id") @db.Uuid
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  governanceBody   GovernanceBody? @relation(fields: [governanceBodyId], references: [id], onDelete: SetNull)
+  officeHolders    OfficeHolder[]
+
+  @@map("office")
+}
+
+model OfficeHolder {
+  id          String    @id @db.Uuid
+  officeId    String    @map("office_id") @db.Uuid
+  personId    String    @map("person_id")
+  appointedAt DateTime? @map("appointed_at")
+  startedAt   DateTime  @map("started_at")
+  endedAt     DateTime? @map("ended_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  office      Office    @relation(fields: [officeId], references: [id], onDelete: Cascade)
+
+  @@map("office_holder")
+  @@index([personId], map: "office_holder_person_id_idx")
+  @@index([officeId], map: "office_holder_office_id_idx")
+}
+
+model Role {
+  id          String   @id @db.Uuid
+  code        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  assignments RoleAssignment[]
+
+  @@map("role")
+}
+
+model RoleAssignment {
+  id         String    @id @db.Uuid
+  roleId     String    @map("role_id") @db.Uuid
+  personId   String    @map("person_id")
+  scopeType  String?   @map("scope_type")
+  scopeId    String?   @map("scope_id")
+  expiresAt  DateTime? @map("expires_at")
+  assignedAt DateTime  @map("assigned_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@map("role_assignment")
+  @@index([personId], map: "role_assignment_person_id_idx")
+  @@index([roleId], map: "role_assignment_role_id_idx")
+}
+
+model Delegation {
+  id                  String    @id @db.Uuid
+  delegatorPersonId   String    @map("delegator_person_id")
+  delegatePersonId    String    @map("delegate_person_id")
+  scopeType           String?   @map("scope_type")
+  scopeId             String?   @map("scope_id")
+  authorityGrantCodes String[]  @default([]) @map("authority_grant_codes")
+  reason              String?
+  effectiveAt         DateTime  @map("effective_at")
+  expiresAt           DateTime? @map("expires_at")
+  createdAt           DateTime  @default(now()) @map("created_at")
+
+  @@map("delegation")
+  @@index([delegatePersonId], map: "delegation_delegate_person_id_idx")
+}
+
+model GovernanceRule {
+  id              String   @id @db.Uuid
+  code            String   @unique
+  name            String
+  ruleType        String   @map("rule_type")
+  description     String?
+  sourceReference String?  @map("source_reference")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  versions        RuleVersion[]
+
+  @@map("governance_rule")
+  @@index([ruleType], map: "governance_rule_rule_type_idx")
+}
+
+model RuleVersion {
+  id               String    @id @db.Uuid
+  governanceRuleId String    @map("governance_rule_id") @db.Uuid
+  versionLabel     String    @map("version_label")
+  effectiveFrom    DateTime  @map("effective_from")
+  effectiveTo      DateTime? @map("effective_to")
+  status           String
+  parametersJson   String?   @map("parameters_json")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  governanceRule   GovernanceRule   @relation(fields: [governanceRuleId], references: [id], onDelete: Cascade)
+  scopes           RuleVersionScope[]
+
+  @@map("rule_version")
+  @@index([governanceRuleId], map: "rule_version_governance_rule_id_idx")
+  @@index([status, effectiveFrom], map: "rule_version_status_effective_from_idx")
+}
+
+model RuleVersionScope {
+  id            String   @id @db.Uuid
+  ruleVersionId String   @map("rule_version_id") @db.Uuid
+  scopeType     String   @map("scope_type")
+  scopeId       String?  @map("scope_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  ruleVersion   RuleVersion @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
+
+  @@map("rule_version_scope")
+  @@index([ruleVersionId], map: "rule_version_scope_rule_version_id_idx")
+  @@index([scopeType, scopeId], map: "rule_version_scope_scope_idx")
+}
+
+model Proposal {
+  id               String    @id @db.Uuid
+  proposalNumber   String?   @map("proposal_number")
+  title            String
+  summary          String?
+  proposalType     String    @map("proposal_type")
+  currentStage     String    @map("current_stage")
+  proposerPersonId String?   @map("proposer_person_id")
+  proposerMemberId String?   @map("proposer_member_id")
+  currentVersionId String?   @unique @map("current_version_id")
+  submittedAt      DateTime? @map("submitted_at")
+  withdrawnAt      DateTime? @map("withdrawn_at")
+  rejectedAt       DateTime? @map("rejected_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  versions         ProposalVersion[]
+  ballots          Ballot[]
+
+  @@map("proposal")
+  @@index([currentStage], map: "proposal_current_stage_idx")
+  @@index([proposalType], map: "proposal_proposal_type_idx")
+  @@index([createdAt], map: "proposal_created_at_idx")
+}
+
+model ProposalVersion {
+  id                String   @id @db.Uuid
+  proposalId        String   @map("proposal_id") @db.Uuid
+  versionNumber     Int      @map("version_number")
+  titleSnapshot     String   @map("title_snapshot")
+  bodyMarkdown      String   @map("body_markdown")
+  changeSummary     String?  @map("change_summary")
+  createdByPersonId String   @map("created_by_person_id")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  proposal          Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@map("proposal_version")
+  @@unique([proposalId, versionNumber], map: "proposal_version_proposal_id_version_number_uidx")
+  @@index([proposalId], map: "proposal_version_proposal_id_idx")
+}
+
+model Ballot {
+  id                String    @id @db.Uuid
+  proposalId        String?   @map("proposal_id") @db.Uuid
+  title             String
+  description       String?
+  state             String
+  scheduledOpenAt   DateTime? @map("scheduled_open_at")
+  openedAt          DateTime? @map("opened_at")
+  scheduledCloseAt  DateTime? @map("scheduled_close_at")
+  closedAt          DateTime? @map("closed_at")
+  cancelledAt       DateTime? @map("cancelled_at")
+  createdByPersonId String    @map("created_by_person_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  proposal          Proposal?                   @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+  eligibility       BallotEligibilitySnapshot[]
+  votes             Vote[]
+  tally             VoteTally?
+  certifications    CertificationRecord[]
+
+  @@map("ballot")
+  @@index([state], map: "ballot_state_idx")
+  @@index([proposalId], map: "ballot_proposal_id_idx")
+  @@index([createdAt], map: "ballot_created_at_idx")
+}
+
+model BallotEligibilitySnapshot {
+  id                String   @id @db.Uuid
+  ballotId          String   @map("ballot_id") @db.Uuid
+  memberId          String   @map("member_id")
+  eligibilityStatus String   @map("eligibility_status")
+  reason            String?
+  snapshotAt        DateTime @map("snapshot_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  ballot            Ballot   @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@map("ballot_eligibility_snapshot")
+  @@index([ballotId], map: "ballot_eligibility_snapshot_ballot_id_idx")
+  @@index([ballotId, memberId], map: "ballot_eligibility_snapshot_ballot_member_idx")
+}
+
+model Vote {
+  id         String   @id @db.Uuid
+  ballotId   String   @map("ballot_id") @db.Uuid
+  memberId   String   @map("member_id")
+  personId   String?  @map("person_id")
+  choice     String
+  castAt     DateTime @map("cast_at")
+  recordedAt DateTime @map("recorded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  ballot     Ballot   @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@map("vote")
+  @@index([ballotId], map: "vote_ballot_id_idx")
+  @@unique([ballotId, memberId], map: "vote_ballot_id_member_id_uidx")
+}
+
+model VoteTally {
+  id            String   @id @db.Uuid
+  ballotId      String   @unique @map("ballot_id") @db.Uuid
+  yesCount      Int      @map("yes_count")
+  noCount       Int      @map("no_count")
+  abstainCount  Int      @map("abstain_count")
+  totalCount    Int      @map("total_count")
+  quorumMet     Boolean  @map("quorum_met")
+  thresholdMet  Boolean  @map("threshold_met")
+  computedAt    DateTime @map("computed_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  ballot        Ballot   @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@map("vote_tally")
+}
+
+model CertificationRecord {
+  id                         String    @id @db.Uuid
+  ballotId                   String    @map("ballot_id") @db.Uuid
+  status                     String
+  certifiedByPersonId        String?   @map("certified_by_person_id")
+  certifiedAt                DateTime? @map("certified_at")
+  rejectedAt                 DateTime? @map("rejected_at")
+  notes                      String?
+  quorumRuleVersionId        String    @map("quorum_rule_version_id")
+  thresholdRuleVersionId     String    @map("threshold_rule_version_id")
+  certificationRuleVersionId String?   @map("certification_rule_version_id")
+  createdAt                  DateTime  @default(now()) @map("created_at")
+  updatedAt                  DateTime  @updatedAt @map("updated_at")
+
+  ballot                     Ballot    @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  ratifications              RatificationRecord[]
+
+  @@map("certification_record")
+  @@index([ballotId], map: "certification_record_ballot_id_idx")
+}
+
+model RatificationRecord {
+  id                    String    @id @db.Uuid
+  proposalId            String    @map("proposal_id") @db.Uuid
+  certificationRecordId String?   @map("certification_record_id") @db.Uuid
+  status                String
+  ratifiedByPersonId    String?   @map("ratified_by_person_id")
+  ratifiedAt            DateTime? @map("ratified_at")
+  notes                 String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  certificationRecord   CertificationRecord? @relation(fields: [certificationRecordId], references: [id], onDelete: SetNull)
+
+  @@map("ratification_record")
+  @@index([proposalId], map: "ratification_record_proposal_id_idx")
+}
+
+model OfficialRecord {
+  id               String    @id @db.Uuid
+  recordType       String    @map("record_type")
+  title            String
+  summary          String?
+  sourceEntityType String    @map("source_entity_type")
+  sourceEntityId   String    @map("source_entity_id")
+  status           String
+  officializedAt   DateTime? @map("officialized_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  versions         RecordVersion[]
+  gazetteEntries   GazetteEntry[]
+
+  @@map("official_record")
+  @@index([recordType], map: "official_record_record_type_idx")
+  @@index([status], map: "official_record_status_idx")
+  @@index([sourceEntityType, sourceEntityId], map: "official_record_source_entity_idx")
+}
+
+model RecordVersion {
+  id               String    @id @db.Uuid
+  officialRecordId String    @map("official_record_id") @db.Uuid
+  versionNumber    Int       @map("version_number")
+  bodyMarkdown     String    @map("body_markdown")
+  changeSummary    String?   @map("change_summary")
+  createdByPersonId String?  @map("created_by_person_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  officialRecord   OfficialRecord @relation(fields: [officialRecordId], references: [id], onDelete: Cascade)
+
+  @@map("record_version")
+  @@unique([officialRecordId, versionNumber], map: "record_version_record_id_version_number_uidx")
+  @@index([officialRecordId], map: "record_version_record_id_idx")
+}
+
+model GazetteIssue {
+  id                String    @id @db.Uuid
+  issueNumber       String?   @map("issue_number")
+  title             String
+  publicationState  String    @map("publication_state")
+  scheduledFor      DateTime? @map("scheduled_for")
+  publishedAt       DateTime? @map("published_at")
+  createdByPersonId String    @map("created_by_person_id")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  entries           GazetteEntry[]
+
+  @@map("gazette_issue")
+  @@index([publicationState], map: "gazette_issue_publication_state_idx")
+  @@index([createdAt], map: "gazette_issue_created_at_idx")
+}
+
+model GazetteEntry {
+  id               String    @id @db.Uuid
+  gazetteIssueId   String    @map("gazette_issue_id") @db.Uuid
+  officialRecordId String    @map("official_record_id") @db.Uuid
+  titleSnapshot    String    @map("title_snapshot")
+  summarySnapshot  String?   @map("summary_snapshot")
+  publicationOrder Int       @map("publication_order")
+  publishedAt      DateTime? @map("published_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  gazetteIssue     GazetteIssue   @relation(fields: [gazetteIssueId], references: [id], onDelete: Cascade)
+  officialRecord   OfficialRecord @relation(fields: [officialRecordId], references: [id], onDelete: Cascade)
+
+  @@map("gazette_entry")
+  @@index([gazetteIssueId], map: "gazette_entry_issue_id_idx")
+  @@unique([gazetteIssueId, publicationOrder], map: "gazette_entry_issue_publication_order_uidx")
+}
+
+model AuditEvent {
+  id                  String   @id @db.Uuid
+  actionType          String   @map("action_type")
+  entityType          String   @map("entity_type")
+  entityId            String   @map("entity_id")
+  actorPersonId       String?  @map("actor_person_id")
+  authoritySourceType String?  @map("authority_source_type")
+  authoritySourceId   String?  @map("authority_source_id")
+  ruleVersionIds      String[] @default([]) @map("rule_version_ids")
+  summary             String?
+  metadataJson        String?  @map("metadata_json")
+  occurredAt          DateTime @map("occurred_at")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  @@map("audit_event")
+  @@index([occurredAt], map: "audit_event_occurred_at_idx")
+  @@index([actionType], map: "audit_event_action_type_idx")
+  @@index([entityType, entityId], map: "audit_event_entity_idx")
+  @@index([actorPersonId], map: "audit_event_actor_person_id_idx")
+}
+
+model IdempotencyRecord {
+  id             String   @id @db.Uuid
+  idempotencyKey String   @map("idempotency_key")
+  actorPersonId  String   @map("actor_person_id")
+  operationName  String   @map("operation_name")
+  requestHash    String   @map("request_hash")
+  responseJson   String   @map("response_json")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("idempotency_record")
+  @@unique([actorPersonId, operationName, idempotencyKey], map: "idempotency_record_actor_operation_key_uidx")
+  @@index([createdAt], map: "idempotency_record_created_at_idx")
+}

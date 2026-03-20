@@ -1,85 +1,19 @@
 # Implementation State
 
-## Completed Batches
+## Completed major areas
+- identity and auth boundary foundations
+- person/member administration
+- authority resolution
+- governance body / office / office-holder administration
+- proposal / ballot / certification foundations
+- official record foundations
+- gazette publication foundations
 
-### Foundation
-- Project scaffolding
-- Architecture definition
-- Domain modeling
+## Current position
+Backend institutional foundation completed through the record + gazette state-memory layer.
 
-### Identity & Authority
-- Identity system
-- Membership system
-- Authority and role system
-- Delegations
-
-### Governance Structure
-- Governance bodies
-- Offices
-- Office holders
-
-### Legislative Core
-- Proposal system
-- Proposal versioning
-- Lifecycle transitions
-
-### Voting System
-- Ballot creation
-- Vote casting
-- Tallying
-
-### Certification
-- Certification creation
-- Rule version binding
-- Certification validation
-
-### Records (Batch 23A)
-- OfficialRecord domain
-- RecordVersion domain
-- Record creation
-- Certification → record promotion
-- Record officialization
-
-### Gazette (Batch 23B)
-- GazetteIssue domain
-- GazetteEntry domain
-- Issue creation
-- Entry creation
-- Issue publication
-
-### Other
-- Governance workflow foundations
-- Identity and authority persistence
-- Auth boundary with JWT/JWKS design
-- Person and member administration
-- Role assignment, delegation, and office-holder administration
-- Governance-body and office administration
-- Official record layer
-- Gazette issue and entry publication layer
-
-## Current Position
-
-The full governance → publication pipeline foundation is implemented.
-
-System now supports:
-
-proposal → ballot → certification → record → gazette
-
-Completed through:
-- Batch 23A — records domain + certification-to-record promotion
-- Batch 23B — gazette issue + entry administration and publication pipeline
-
-## Next Batch
-
-Batch 23C — orchestration layer and handlers for:
-  - certification -> record
-  - record officialization
-  - gazette issue entry scheduling
-  - publication preparation
-  - end-to-end pipeline handlers
-  - guided promotion workflows
-  - publication readiness checks
-
-## Completion Estimate
-
-Backend core: ~65–75% complete
+## Next batch
+Batch 23C — orchestration layer
+- certification -> record -> officialize
+- record -> gazette scheduling
+- publication readiness / guided promotion workflows

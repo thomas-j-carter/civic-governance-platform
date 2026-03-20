@@ -1,0 +1,11 @@
+{
+  "name": "@ardtire/gov-api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'wire actual dev command here'",
+    "build": "echo 'wire actual build command here'",
+    "typecheck": "echo 'wire actual typecheck command here'"
+  }
+}

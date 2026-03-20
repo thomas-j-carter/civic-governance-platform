@@ -1,12 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-NAME=$1
-
+NAME="${1:-}"
 if [ -z "$NAME" ]; then
   echo "Usage: create-migration.sh <name>"
   exit 1
 fi
 
-npx prisma migrate dev --name $NAME
-
-echo "Migration created: $NAME"
+echo "Replace this wrapper with your canonical Prisma migration command."
+echo "Requested migration name: $NAME"

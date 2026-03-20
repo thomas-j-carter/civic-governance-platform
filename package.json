@@ -1,26 +1,11 @@
 {
-  "name": "civic-governance-platform",
-  "version": "1.0.0",
-  "description": "Civic Digital Governance Platform is a full-stack civic governance system that enables authenticated users to apply for membership, collaborate on constitutional proposals, manage structured review and voting workflows, and administer a growing digital governance community through a production-style web platform.",
-  "homepage": "https://github.com/thomas-j-carter/civic-governance-platform#readme",
-  "bugs": {
-    "url": "https://github.com/thomas-j-carter/civic-governance-platform/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/thomas-j-carter/civic-governance-platform.git"
-  },
-  "license": "ISC",
-  "author": "",
-  "type": "commonjs",
-  "main": "index.js",
-  "directories": {
-    "doc": "docs"
-  },
-  {
-    "scripts": {
-      "validate:repo": "python tools/repo-validator/validate_repo.py",
-      "compile:context": "python tools/context-compiler/compile_context.py"
-    }
+  "name": "ardtire-governance-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "validate:repo": "python tools/repo-validator/validate_repo.py",
+    "compile:context": "python tools/context-compiler/compile_context.py",
+    "codegen:gov-client": "bash tools/codegen/generate-client.sh"
   }
 }

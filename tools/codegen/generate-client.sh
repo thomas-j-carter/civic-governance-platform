@@ -1,10 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
 OUTPUT_DIR=packages/gov-client/src/generated
+mkdir -p "$OUTPUT_DIR"
 
-mkdir -p $OUTPUT_DIR
-
-npx openapi-typescript apps/gov-api/openapi.yaml \
-  --output $OUTPUT_DIR/types.ts
-
-echo "Generated types."
+echo "Replace this script with your real OpenAPI -> client generation command."
+echo "Placeholder output directory ensured at $OUTPUT_DIR"

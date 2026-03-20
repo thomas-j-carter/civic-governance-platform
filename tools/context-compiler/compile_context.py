@@ -1,7 +1,5 @@
 import os
 
-OUTPUT_FILE = "docs/ai/context/COMPILED_CONTEXT.md"
-
 FILES = [
     "docs/ai/context/PROJECT_CONTEXT.md",
     "docs/ai/context/ARCHITECTURE_SUMMARY.md",
@@ -11,18 +9,21 @@ FILES = [
     "docs/ai/context/AI_RULES.md",
 ]
 
-def read_file(path):
-    if not os.path.exists(path):
-        return f"\n## Missing: {path}\n"
-    with open(path, "r", encoding="utf-8") as f:
-        return f"\n## {path}\n\n{f.read()}\n"
+OUTPUT = "docs/ai/context/COMPILED_CONTEXT.md"
 
-def compile_context():
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as out:
+def main():
+    os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
+    with open(OUTPUT, "w", encoding="utf-8") as out:
         out.write("# COMPILED CONTEXT\n\n")
-        for f in FILES:
-            out.write(read_file(f))
+        for path in FILES:
+            out.write(f"## {path}\n\n")
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    out.write(f.read())
+                    out.write("\n\n")
+            else:
+                out.write("_Missing_\n\n")
+    print(f"Wrote {OUTPUT}")
 
 if __name__ == "__main__":
-    compile_context()
-    print(f"Compiled context to {OUTPUT_FILE}")
+    main()
