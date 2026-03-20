@@ -1,0 +1,435 @@
+openapi: 3.1.0
+
+info:
+  title: Ardtire Governance API
+  version: 0.1.0
+  description: >
+    Canonical governance API for the Ardtire digital governance platform.
+    All domain mutations are performed through this service.
+
+servers:
+  - url: http://localhost:3002
+
+tags:
+  - name: Persons
+  - name: Members
+  - name: Governance
+  - name: Proposals
+  - name: Ballots
+  - name: Certifications
+  - name: Records
+  - name: Gazette
+  - name: Audit
+
+paths:
+
+  #############################################
+  # PERSONS
+  #############################################
+
+  /persons:
+    post:
+      tags: [Persons]
+      summary: Create person
+      operationId: createPerson
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePersonRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonResponse'
+
+    get:
+      tags: [Persons]
+      summary: List persons
+      operationId: listPersons
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonListResponse'
+
+  #############################################
+  # MEMBERS
+  #############################################
+
+  /members:
+    get:
+      tags: [Members]
+      summary: List members
+      operationId: listMembers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberListResponse'
+
+  /members/{memberId}/actions/admit:
+    post:
+      tags: [Members]
+      summary: Admit member
+      operationId: admitMember
+      parameters:
+        - $ref: '#/components/parameters/memberId'
+      responses:
+        '200':
+          description: Member admitted
+
+  #############################################
+  # PROPOSALS
+  #############################################
+
+  /proposals:
+    post:
+      tags: [Proposals]
+      summary: Create proposal
+      operationId: createProposal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProposalRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalResponse'
+
+    get:
+      tags: [Proposals]
+      summary: List proposals
+      operationId: listProposals
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProposalListResponse'
+
+  /proposals/{proposalId}/actions/submit:
+    post:
+      tags: [Proposals]
+      summary: Submit proposal
+      operationId: submitProposal
+      parameters:
+        - $ref: '#/components/parameters/proposalId'
+      responses:
+        '200':
+          description: Submitted
+
+  #############################################
+  # BALLOTS
+  #############################################
+
+  /ballots:
+    post:
+      tags: [Ballots]
+      summary: Create ballot
+      operationId: createBallot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBallotRequest'
+      responses:
+        '201':
+          description: Created
+
+  /ballots/{ballotId}/actions/open:
+    post:
+      tags: [Ballots]
+      summary: Open ballot
+      operationId: openBallot
+      parameters:
+        - $ref: '#/components/parameters/ballotId'
+      responses:
+        '200':
+          description: Opened
+
+  /ballots/{ballotId}/actions/close:
+    post:
+      tags: [Ballots]
+      summary: Close ballot
+      operationId: closeBallot
+      parameters:
+        - $ref: '#/components/parameters/ballotId'
+      responses:
+        '200':
+          description: Closed
+
+  #############################################
+  # CERTIFICATION
+  #############################################
+
+  /certifications:
+    post:
+      tags: [Certifications]
+      summary: Create certification
+      operationId: createCertification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCertificationRequest'
+      responses:
+        '201':
+          description: Created
+
+  /certifications/{certificationId}/actions/certify:
+    post:
+      tags: [Certifications]
+      summary: Certify ballot result
+      operationId: certify
+      parameters:
+        - $ref: '#/components/parameters/certificationId'
+      responses:
+        '200':
+          description: Certified
+
+  #############################################
+  # RECORDS
+  #############################################
+
+  /records:
+    post:
+      tags: [Records]
+      summary: Create official record
+      operationId: createRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRecordRequest'
+      responses:
+        '201':
+          description: Created
+
+  /records/{recordId}/actions/officialize:
+    post:
+      tags: [Records]
+      summary: Officialize record
+      operationId: officializeRecord
+      parameters:
+        - $ref: '#/components/parameters/recordId'
+      responses:
+        '200':
+          description: Officialized
+
+  #############################################
+  # GAZETTE
+  #############################################
+
+  /gazette/issues:
+    post:
+      tags: [Gazette]
+      summary: Create issue
+      operationId: createGazetteIssue
+      responses:
+        '201':
+          description: Created
+
+  /gazette/issues/{issueId}/entries:
+    post:
+      tags: [Gazette]
+      summary: Add entry to issue
+      operationId: createGazetteEntry
+      parameters:
+        - $ref: '#/components/parameters/issueId'
+      responses:
+        '201':
+          description: Entry added
+
+  /gazette/issues/{issueId}/actions/publish:
+    post:
+      tags: [Gazette]
+      summary: Publish issue
+      operationId: publishIssue
+      parameters:
+        - $ref: '#/components/parameters/issueId'
+      responses:
+        '200':
+          description: Published
+
+components:
+
+  parameters:
+    proposalId:
+      name: proposalId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    ballotId:
+      name: ballotId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    certificationId:
+      name: certificationId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    recordId:
+      name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    issueId:
+      name: issueId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    memberId:
+      name: memberId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  #############################################
+  # SCHEMAS
+  #############################################
+
+  schemas:
+
+    ProblemDetails:
+      type: object
+      required: [type, title]
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        code:
+          type: string
+        errors:
+          type: object
+          additionalProperties: true
+
+    #########################################
+
+    CreatePersonRequest:
+      type: object
+      required: [displayName]
+      properties:
+        displayName:
+          type: string
+        email:
+          type: string
+
+    PersonResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: string
+
+    PersonListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonResponse'
+
+    #########################################
+
+    CreateProposalRequest:
+      type: object
+      required: [title, body]
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+
+    ProposalResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        stage:
+          type: string
+
+    ProposalListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProposalResponse'
+
+    #########################################
+
+    CreateBallotRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        proposalId:
+          type: string
+
+    #########################################
+
+    CreateCertificationRequest:
+      type: object
+      required: [ballotId]
+      properties:
+        ballotId:
+          type: string
+
+    #########################################
+
+    CreateRecordRequest:
+      type: object
+      required: [title, sourceEntityId]
+      properties:
+        title:
+          type: string
+        sourceEntityId:
+          type: string
+
+    #########################################
+
+    MemberListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
