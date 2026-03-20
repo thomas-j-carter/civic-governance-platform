@@ -13,7 +13,7 @@ Active structured definition and implementation. Documentation and implementatio
 | Domain model and Prisma schema | Complete |
 | CMS (Payload CMS) | Scaffolded and runnable |
 | Governance API (Hono) | Routes defined; implementation in progress |
-| Web application (Next.js) | Scaffolded |
+| Web application (TanStack Start + SolidJS) | Scaffolded |
 | Shared packages (contracts, domain, gov-client, workflows) | Scaffolded |
 | Documentation system | Canonical structure in place; content filling in |
 
@@ -25,7 +25,7 @@ The platform is a **pnpm monorepo** with three applications and four shared pack
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                   apps/web (Next.js)                 │
+│          apps/web (TanStack Start + SolidJS)         │
 │   governance, member, admin surfaces                 │
 └────────────────────┬─────────────────────────────────┘
                      │ packages/gov-client
@@ -53,7 +53,7 @@ Cross-cutting:
 
 | Name | Path | Purpose |
 |------|------|---------|
-| web | `apps/web` | Next.js frontend — member, governance, and admin surfaces |
+| web | `apps/web` | TanStack Start + SolidJS frontend — member, governance, and admin surfaces |
 | gov-api | `apps/gov-api` | Hono REST API — all governance business logic and data access |
 | cms | `apps/cms` | Payload CMS — content management and publication pipeline; runs on port 3001 |
 | contracts | `packages/contracts` | TypeScript service contracts shared between gov-api and gov-client |
