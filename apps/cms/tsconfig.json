@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "types": ["node"],
+    "paths": {
+      "@payload-config": ["./payload.config.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "payload.config.ts",
+    "next.config.mjs",
+    "vitest.config.ts"
+  ]
+}
