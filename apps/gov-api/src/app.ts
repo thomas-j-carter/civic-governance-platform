@@ -1,50 +1,31 @@
-import { Hono } from 'hono'
-import { authContextMiddleware } from './http/middleware/auth-context'
-import { devActorProvisioningMiddleware } from './http/middleware/dev-actor-provisioning'
-import { requestIdMiddleware } from './http/middleware/request-id'
-import { createAgendasRoutes } from './http/routes/agendas'
-import { createAmendmentsRoutes } from './http/routes/amendments'
-import { createAuthContextRoutes } from './http/routes/auth-context'
-import { createGovernanceBodiesRoutes } from './http/routes/governance-bodies'
-import { createHealthRoutes } from './http/routes/health'
-import { createMembershipApplicationRoutes } from './http/routes/membership-applications'
-import { createOfficesRoutes } from './http/routes/offices'
-import { createProposalsRoutes } from './http/routes/proposals'
-import { createSessionsRoutes } from './http/routes/sessions'
-import type { AppBindings } from './http/types'
+// apps/gov-api/src/app.ts
 
-export function createApp() {
-  const app = new Hono<AppBindings>()
+import { Hono } from "hono";
+import type { AppContext } from "./context/app-context";
+import type { HonoEnv } from "./types/hono";
+import { requestContextMiddleware } from "./middleware/request-context";
+import { createAppContextMiddleware } from "./middleware/app-context";
+import { errorHandler } from "./middleware/error-handler";
+import { createApiRoutes } from "./routes";
 
-  app.use('*', requestIdMiddleware)
-  app.use('*', authContextMiddleware)
-  app.use('*', devActorProvisioningMiddleware)
+export function createApp(appContext: AppContext): Hono<HonoEnv> {
+  const app = new Hono<HonoEnv>();
 
-  app.onError((error, c) => {
-    console.error('Unhandled request error', {
-      requestId: c.get('requestId'),
-      message: error.message,
-      stack: error.stack,
-    })
+  app.use("*", requestContextMiddleware);
+  app.use("*", createAppContextMiddleware(appContext));
+  app.use("*", errorHandler);
 
+  app.get("/health", (c) => {
     return c.json(
       {
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'An unexpected error occurred.',
+        ok: true,
+        service: "gov-api",
       },
-      500,
-    )
-  })
+      200,
+    );
+  });
 
-  app.route('/', createHealthRoutes())
-  app.route('/', createAuthContextRoutes())
-  app.route('/', createMembershipApplicationRoutes())
-  app.route('/', createGovernanceBodiesRoutes())
-  app.route('/', createOfficesRoutes())
-  app.route('/', createSessionsRoutes())
-  app.route('/', createAgendasRoutes())
-  app.route('/', createProposalsRoutes())
-  app.route('/', createAmendmentsRoutes())
+  app.route("/api/v1", createApiRoutes());
 
-  return app
+  return app;
 }
