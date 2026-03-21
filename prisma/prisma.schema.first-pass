@@ -1,0 +1,1388 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MembershipApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  INFORMATION_REQUESTED
+  RESUBMITTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+  REVOKED
+  FORMER
+}
+
+enum GovernanceBodyType {
+  ASSEMBLY
+  COUNCIL
+  COMMITTEE
+  CHAMBER
+  BOARD
+  OFFICE
+  OTHER
+}
+
+enum OfficeTermStatus {
+  PLANNED
+  ACTIVE
+  ENDED
+  VACANT
+}
+
+enum OfficeHolderStatus {
+  ACTIVE
+  ENDED
+  REMOVED
+}
+
+enum ScopeType {
+  GLOBAL
+  GOVERNANCE_BODY
+  OFFICE
+  OFFICE_TERM
+  PROPOSAL
+  BALLOT
+  MEMBER
+  PERSON
+  RULE
+  RECORD
+  GAZETTE_ISSUE
+  PROPOSAL_TYPE
+  OTHER
+}
+
+enum ProposalType {
+  GENERAL
+  RESOLUTION
+  ACT
+  AMENDMENT
+  APPOINTMENT
+  RULE_CHANGE
+  BUDGET
+  OTHER
+}
+
+enum ProposalStage {
+  DRAFT
+  SUBMITTED
+  ELIGIBILITY_REVIEW
+  COMMITTEE_ASSIGNED
+  IN_COMMITTEE
+  READY_FOR_READING
+  FIRST_READING
+  AMENDMENT_WINDOW
+  SECOND_READING
+  FINAL_VOTE_SCHEDULED
+  VOTING_OPEN
+  VOTING_CLOSED
+  RESULT_PENDING_CERTIFICATION
+  CERTIFIED
+  RATIFIED
+  PUBLISHED
+  ARCHIVED
+  WITHDRAWN
+  REJECTED
+}
+
+enum AmendmentStatus {
+  PROPOSED
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CommitteeAssignmentStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum BallotState {
+  DRAFT
+  SCHEDULED
+  OPEN
+  CLOSED
+  TALLYING
+  RESULT_COMPUTED
+  EXPIRED
+  CANCELLED
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  INELIGIBLE
+}
+
+enum VoteChoice {
+  YES
+  NO
+  ABSTAIN
+}
+
+enum CertificationStatus {
+  PENDING
+  UNDER_REVIEW
+  CERTIFIED
+  REJECTED
+}
+
+enum RatificationStatus {
+  PENDING
+  RATIFIED
+  REJECTED
+}
+
+enum OfficialRecordStatus {
+  DRAFT
+  OFFICIAL
+  PUBLISHED
+  SUPERSEDED
+  ARCHIVED
+}
+
+enum PublicationState {
+  DRAFT
+  READY_FOR_PUBLICATION
+  SCHEDULED
+  PUBLISHED
+  SUPERSEDED
+  RETRACTED
+  ARCHIVED
+}
+
+enum RuleType {
+  PROCEDURAL
+  ELIGIBILITY
+  QUORUM
+  THRESHOLD
+  CERTIFICATION
+  PUBLICATION
+  AUTHORITY
+  OTHER
+}
+
+enum RuleVersionStatus {
+  DRAFT
+  ACTIVE
+  SUPERSEDED
+  RETIRED
+}
+
+enum ActionType {
+  CREATE
+  UPDATE
+  DELETE
+  SUBMIT
+  REVIEW
+  APPROVE
+  REJECT
+  REQUEST_INFORMATION
+  RESUBMIT
+  ASSIGN
+  OPEN
+  CLOSE
+  CAST
+  COMPUTE
+  CERTIFY
+  RATIFY
+  PUBLISH
+  ARCHIVE
+  REVOKE
+  DELEGATE
+  LOGIN
+  LOGOUT
+  OTHER
+}
+
+enum RecordArtifactType {
+  PDF
+  MARKDOWN
+  HTML
+  DOCX
+  IMAGE
+  ATTACHMENT
+  SIGNED_COPY
+  EXPORT
+  OTHER
+}
+
+enum NotificationType {
+  INFO
+  ACTION_REQUIRED
+  STATUS_CHANGE
+  GOVERNANCE
+  SECURITY
+  PUBLICATION
+  OTHER
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  FAILED
+  READ
+  CANCELLED
+}
+
+enum NotificationChannel {
+  EMAIL
+  IN_APP
+  WEBHOOK
+  SMS
+  OTHER
+}
+
+enum JobStatus {
+  PENDING
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  DEAD_LETTER
+}
+
+enum EventCategory {
+  DOMAIN
+  SYSTEM
+  INTEGRATION
+  SECURITY
+  AUDIT
+}
+
+model Person {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  displayName        String
+  legalName          String?
+  primaryEmail       String?                    @unique
+  primaryPhone       String?
+  createdAt          DateTime                   @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                   @updatedAt @db.Timestamptz(6)
+
+  userAccount        UserAccount?
+  member             Member?
+  externalIdentities ExternalIdentity[]
+  sessions           SessionRecord[]
+
+  submittedApplications MembershipApplication[] @relation("ApplicationApplicant")
+  applicationReviews    MembershipApplicationReview[] @relation("ApplicationReviewer")
+  membershipStatusChanges MembershipStatusHistory[] @relation("MembershipStatusChangedBy")
+
+  assignedRoles      RoleAssignment[]
+  delegationsGiven   Delegation[]               @relation("DelegationDelegator")
+  delegationsReceived Delegation[]              @relation("DelegationDelegate")
+
+  officeHolders      OfficeHolder[]
+  governanceBodyMemberships GovernanceBodyMembership[]
+
+  proposedProposals  Proposal[]                 @relation("ProposalProposer")
+  proposalVersionsAuthored ProposalVersion[]    @relation("ProposalVersionAuthor")
+  proposalStageChanges ProposalStageHistory[]   @relation("ProposalStageChangedBy")
+  proposedAmendments Amendment[]                @relation("AmendmentProposer")
+  committeeAssignmentsMade CommitteeAssignment[] @relation("CommitteeAssignedBy")
+
+  createdBallots     Ballot[]                   @relation("BallotCreatedBy")
+  votes              Vote[]
+  ballotStateChanges BallotStateHistory[]       @relation("BallotStateChangedBy")
+
+  certificationsMade CertificationRecord[]      @relation("CertificationBy")
+  certificationReviewNotes CertificationReviewNote[] @relation("CertificationNoteBy")
+  ratificationsMade  RatificationRecord[]       @relation("RatificationBy")
+
+  recordsVersioned   RecordVersion[]            @relation("RecordVersionAuthor")
+  gazetteIssuesCreated GazetteIssue[]           @relation("GazetteIssueCreatedBy")
+
+  auditEvents        AuditEvent[]
+  securityEvents     SecurityEvent[]
+  notifications      Notification[]
+  notificationDeliveries NotificationDelivery[] @relation("NotificationDeliveryActor")
+
+  @@map("persons")
+}
+
+model UserAccount {
+  id           String            @id @default(uuid()) @db.Uuid
+  personId     String            @unique @db.Uuid
+  username     String?           @unique
+  isActive     Boolean           @default(true)
+  lastLoginAt  DateTime?         @db.Timestamptz(6)
+  createdAt    DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime          @updatedAt @db.Timestamptz(6)
+
+  person       Person            @relation(fields: [personId], references: [id], onDelete: Cascade)
+  externalIdentities ExternalIdentity[]
+  sessions     SessionRecord[]
+  securityEvents SecurityEvent[]
+
+  @@map("user_accounts")
+}
+
+model ExternalIdentity {
+  id              String      @id @default(uuid()) @db.Uuid
+  userAccountId   String      @db.Uuid
+  provider        String
+  providerSubject String
+  providerEmail   String?
+  createdAt       DateTime    @default(now()) @db.Timestamptz(6)
+  lastSeenAt      DateTime?   @db.Timestamptz(6)
+
+  userAccount     UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  person          Person?     @relation(fields: [personId], references: [id])
+  personId        String?     @db.Uuid
+
+  @@unique([provider, providerSubject])
+  @@index([userAccountId])
+  @@index([personId])
+  @@map("external_identities")
+}
+
+model SessionRecord {
+  id            String      @id @default(uuid()) @db.Uuid
+  userAccountId String      @db.Uuid
+  personId      String?     @db.Uuid
+  issuedAt      DateTime    @default(now()) @db.Timestamptz(6)
+  expiresAt     DateTime    @db.Timestamptz(6)
+  revokedAt     DateTime?   @db.Timestamptz(6)
+  ipAddress     String?
+  userAgent     String?
+
+  userAccount   UserAccount @relation(fields: [userAccountId], references: [id], onDelete: Cascade)
+  person        Person?     @relation(fields: [personId], references: [id])
+
+  @@index([userAccountId])
+  @@index([personId])
+  @@index([expiresAt])
+  @@map("session_records")
+}
+
+model MembershipApplication {
+  id                String                         @id @default(uuid()) @db.Uuid
+  applicantPersonId String                         @db.Uuid
+  status            MembershipApplicationStatus    @default(DRAFT)
+  supportingStatement String?
+  submittedAt       DateTime?                      @db.Timestamptz(6)
+  withdrawnAt       DateTime?                      @db.Timestamptz(6)
+  decidedAt         DateTime?                      @db.Timestamptz(6)
+  decisionSummary   String?
+  createdAt         DateTime                       @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime                       @updatedAt @db.Timestamptz(6)
+
+  applicant         Person                         @relation("ApplicationApplicant", fields: [applicantPersonId], references: [id], onDelete: Restrict)
+  reviews           MembershipApplicationReview[]
+
+  @@index([applicantPersonId])
+  @@index([status])
+  @@index([submittedAt])
+  @@map("membership_applications")
+}
+
+model MembershipApplicationReview {
+  id              String       @id @default(uuid()) @db.Uuid
+  applicationId   String       @db.Uuid
+  reviewerPersonId String      @db.Uuid
+  actionType      ActionType
+  notes           String?
+  createdAt       DateTime     @default(now()) @db.Timestamptz(6)
+
+  application     MembershipApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  reviewer        Person       @relation("ApplicationReviewer", fields: [reviewerPersonId], references: [id], onDelete: Restrict)
+
+  @@index([applicationId])
+  @@index([reviewerPersonId])
+  @@index([createdAt])
+  @@map("membership_application_reviews")
+}
+
+model MembershipClass {
+  id                    String    @id @default(uuid()) @db.Uuid
+  code                  String    @unique
+  name                  String
+  description           String?
+  isVotingEligibleByDefault Boolean @default(false)
+  createdAt             DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(6)
+
+  members               Member[]
+
+  @@map("membership_classes")
+}
+
+model Member {
+  id                 String            @id @default(uuid()) @db.Uuid
+  personId           String            @unique @db.Uuid
+  memberNumber       String?           @unique
+  membershipClassId  String            @db.Uuid
+  status             MembershipStatus  @default(PENDING)
+  admittedAt         DateTime?         @db.Timestamptz(6)
+  endedAt            DateTime?         @db.Timestamptz(6)
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(6)
+
+  person             Person            @relation(fields: [personId], references: [id], onDelete: Restrict)
+  membershipClass    MembershipClass   @relation(fields: [membershipClassId], references: [id], onDelete: Restrict)
+  statusHistory      MembershipStatusHistory[]
+  proposedProposals  Proposal[]        @relation("ProposalProposerMember")
+  proposedAmendments Amendment[]       @relation("AmendmentProposerMember")
+  ballotSnapshots    BallotEligibilitySnapshot[]
+  votes              Vote[]
+
+  @@index([membershipClassId])
+  @@index([status])
+  @@map("members")
+}
+
+model MembershipStatusHistory {
+  id                 String            @id @default(uuid()) @db.Uuid
+  memberId           String            @db.Uuid
+  fromStatus         MembershipStatus?
+  toStatus           MembershipStatus
+  reason             String?
+  effectiveAt        DateTime          @db.Timestamptz(6)
+  recordedByPersonId String?           @db.Uuid
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+
+  member             Member            @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  recordedBy         Person?           @relation("MembershipStatusChangedBy", fields: [recordedByPersonId], references: [id], onDelete: SetNull)
+
+  @@index([memberId])
+  @@index([effectiveAt])
+  @@index([recordedByPersonId])
+  @@map("membership_status_history")
+}
+
+model GovernanceBody {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  code               String                    @unique
+  name               String
+  description        String?
+  bodyType           GovernanceBodyType
+  isActive           Boolean                   @default(true)
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime                  @updatedAt @db.Timestamptz(6)
+
+  offices            Office[]
+  memberships        GovernanceBodyMembership[]
+  committeeAssignments CommitteeAssignment[]
+
+  @@index([bodyType])
+  @@index([isActive])
+  @@map("governance_bodies")
+}
+
+model GovernanceBodyMembership {
+  id                String      @id @default(uuid()) @db.Uuid
+  governanceBodyId  String      @db.Uuid
+  personId          String      @db.Uuid
+  roleTitle         String?
+  startedAt         DateTime    @db.Timestamptz(6)
+  endedAt           DateTime?   @db.Timestamptz(6)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(6)
+
+  governanceBody    GovernanceBody @relation(fields: [governanceBodyId], references: [id], onDelete: Cascade)
+  person            Person      @relation(fields: [personId], references: [id], onDelete: Restrict)
+
+  @@index([governanceBodyId])
+  @@index([personId])
+  @@index([startedAt, endedAt])
+  @@map("governance_body_memberships")
+}
+
+model Office {
+  id                 String               @id @default(uuid()) @db.Uuid
+  code               String               @unique
+  name               String
+  description        String?
+  governanceBodyId   String?              @db.Uuid
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime             @updatedAt @db.Timestamptz(6)
+
+  governanceBody     GovernanceBody?      @relation(fields: [governanceBodyId], references: [id], onDelete: SetNull)
+  officeTerms        OfficeTerm[]
+  officeHolders      OfficeHolder[]
+  authorityGrants    OfficeAuthorityGrant[]
+
+  @@index([governanceBodyId])
+  @@index([isActive])
+  @@map("offices")
+}
+
+model OfficeTerm {
+  id                 String            @id @default(uuid()) @db.Uuid
+  officeId           String            @db.Uuid
+  termStart          DateTime          @db.Timestamptz(6)
+  termEnd            DateTime?         @db.Timestamptz(6)
+  status             OfficeTermStatus  @default(PLANNED)
+  createdAt          DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @db.Timestamptz(6)
+
+  office             Office            @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  officeHolders      OfficeHolder[]
+
+  @@index([officeId])
+  @@index([termStart, termEnd])
+  @@index([status])
+  @@map("office_terms")
+}
+
+model OfficeHolder {
+  id                 String             @id @default(uuid()) @db.Uuid
+  officeId           String             @db.Uuid
+  officeTermId       String?            @db.Uuid
+  personId           String             @db.Uuid
+  appointedAt        DateTime?          @db.Timestamptz(6)
+  startedAt          DateTime           @db.Timestamptz(6)
+  endedAt            DateTime?          @db.Timestamptz(6)
+  status             OfficeHolderStatus @default(ACTIVE)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  office             Office             @relation(fields: [officeId], references: [id], onDelete: Restrict)
+  officeTerm         OfficeTerm?        @relation(fields: [officeTermId], references: [id], onDelete: SetNull)
+  person             Person             @relation(fields: [personId], references: [id], onDelete: Restrict)
+
+  @@index([officeId])
+  @@index([officeTermId])
+  @@index([personId])
+  @@index([startedAt, endedAt])
+  @@map("office_holders")
+}
+
+model Role {
+  id                 String             @id @default(uuid()) @db.Uuid
+  code               String             @unique
+  name               String
+  description        String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  assignments        RoleAssignment[]
+  authorityGrants    RoleAuthorityGrant[]
+
+  @@map("roles")
+}
+
+model RoleAssignment {
+  id                 String             @id @default(uuid()) @db.Uuid
+  roleId             String             @db.Uuid
+  personId           String             @db.Uuid
+  scopeType          ScopeType          @default(GLOBAL)
+  scopeId            String?
+  assignedAt         DateTime           @default(now()) @db.Timestamptz(6)
+  expiresAt          DateTime?          @db.Timestamptz(6)
+  revokedAt          DateTime?          @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  role               Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  person             Person             @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([roleId])
+  @@index([personId])
+  @@index([scopeType, scopeId])
+  @@index([expiresAt, revokedAt])
+  @@map("role_assignments")
+}
+
+model AuthorityGrant {
+  id                 String             @id @default(uuid()) @db.Uuid
+  code               String             @unique
+  name               String
+  description        String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  roleMappings       RoleAuthorityGrant[]
+  officeMappings     OfficeAuthorityGrant[]
+  delegationMappings DelegationAuthorityGrant[]
+
+  @@map("authority_grants")
+}
+
+model RoleAuthorityGrant {
+  id                 String             @id @default(uuid()) @db.Uuid
+  roleId             String             @db.Uuid
+  authorityGrantId   String             @db.Uuid
+
+  role               Role               @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  authorityGrant     AuthorityGrant     @relation(fields: [authorityGrantId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, authorityGrantId])
+  @@index([authorityGrantId])
+  @@map("role_authority_grants")
+}
+
+model OfficeAuthorityGrant {
+  id                 String             @id @default(uuid()) @db.Uuid
+  officeId           String             @db.Uuid
+  authorityGrantId   String             @db.Uuid
+
+  office             Office             @relation(fields: [officeId], references: [id], onDelete: Cascade)
+  authorityGrant     AuthorityGrant     @relation(fields: [authorityGrantId], references: [id], onDelete: Cascade)
+
+  @@unique([officeId, authorityGrantId])
+  @@index([authorityGrantId])
+  @@map("office_authority_grants")
+}
+
+model Delegation {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  delegatorPersonId  String                    @db.Uuid
+  delegatePersonId   String                    @db.Uuid
+  scopeType          ScopeType                 @default(GLOBAL)
+  scopeId            String?
+  reason             String?
+  effectiveAt        DateTime                  @db.Timestamptz(6)
+  expiresAt          DateTime?                 @db.Timestamptz(6)
+  revokedAt          DateTime?                 @db.Timestamptz(6)
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(6)
+
+  delegator          Person                    @relation("DelegationDelegator", fields: [delegatorPersonId], references: [id], onDelete: Restrict)
+  delegate           Person                    @relation("DelegationDelegate", fields: [delegatePersonId], references: [id], onDelete: Restrict)
+  authorityGrants    DelegationAuthorityGrant[]
+
+  @@index([delegatorPersonId])
+  @@index([delegatePersonId])
+  @@index([scopeType, scopeId])
+  @@index([effectiveAt, expiresAt, revokedAt])
+  @@map("delegations")
+}
+
+model DelegationAuthorityGrant {
+  id                 String             @id @default(uuid()) @db.Uuid
+  delegationId       String             @db.Uuid
+  authorityGrantId   String             @db.Uuid
+
+  delegation         Delegation         @relation(fields: [delegationId], references: [id], onDelete: Cascade)
+  authorityGrant     AuthorityGrant     @relation(fields: [authorityGrantId], references: [id], onDelete: Cascade)
+
+  @@unique([delegationId, authorityGrantId])
+  @@index([authorityGrantId])
+  @@map("delegation_authority_grants")
+}
+
+model Proposal {
+  id                 String             @id @default(uuid()) @db.Uuid
+  proposalNumber     String?            @unique
+  title              String
+  summary            String?
+  proposalType       ProposalType       @default(GENERAL)
+  currentStage       ProposalStage      @default(DRAFT)
+  proposerPersonId   String?            @db.Uuid
+  proposerMemberId   String?            @db.Uuid
+  currentVersionId   String?            @db.Uuid
+  submittedAt        DateTime?          @db.Timestamptz(6)
+  withdrawnAt        DateTime?          @db.Timestamptz(6)
+  rejectedAt         DateTime?          @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  proposerPerson     Person?            @relation("ProposalProposer", fields: [proposerPersonId], references: [id], onDelete: SetNull)
+  proposerMember     Member?            @relation("ProposalProposerMember", fields: [proposerMemberId], references: [id], onDelete: SetNull)
+  versions           ProposalVersion[]
+  currentVersion     ProposalVersion?   @relation("CurrentProposalVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  stageHistory       ProposalStageHistory[]
+  amendments         Amendment[]
+  committeeAssignments CommitteeAssignment[]
+  ballots            Ballot[]
+  ratifications      RatificationRecord[]
+
+  @@index([proposalType])
+  @@index([currentStage])
+  @@index([proposerPersonId])
+  @@index([proposerMemberId])
+  @@index([submittedAt])
+  @@map("proposals")
+}
+
+model ProposalVersion {
+  id                 String             @id @default(uuid()) @db.Uuid
+  proposalId         String             @db.Uuid
+  versionNumber      Int
+  titleSnapshot      String
+  bodyMarkdown       String
+  changeSummary      String?
+  createdByPersonId  String             @db.Uuid
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  proposal           Proposal           @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  currentForProposal Proposal[]         @relation("CurrentProposalVersion")
+  createdBy          Person             @relation("ProposalVersionAuthor", fields: [createdByPersonId], references: [id], onDelete: Restrict)
+
+  @@unique([proposalId, versionNumber])
+  @@index([createdByPersonId])
+  @@map("proposal_versions")
+}
+
+model ProposalStageHistory {
+  id                 String             @id @default(uuid()) @db.Uuid
+  proposalId         String             @db.Uuid
+  fromStage          ProposalStage?
+  toStage            ProposalStage
+  triggeredByPersonId String?           @db.Uuid
+  reason             String?
+  effectiveAt        DateTime           @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  proposal           Proposal           @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  triggeredBy        Person?            @relation("ProposalStageChangedBy", fields: [triggeredByPersonId], references: [id], onDelete: SetNull)
+
+  @@index([proposalId])
+  @@index([effectiveAt])
+  @@index([triggeredByPersonId])
+  @@map("proposal_stage_history")
+}
+
+model Amendment {
+  id                 String             @id @default(uuid()) @db.Uuid
+  proposalId         String             @db.Uuid
+  proposedByPersonId String?            @db.Uuid
+  proposedByMemberId String?            @db.Uuid
+  title              String?
+  bodyText           String
+  status             AmendmentStatus    @default(PROPOSED)
+  submittedAt        DateTime           @default(now()) @db.Timestamptz(6)
+  resolvedAt         DateTime?          @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  proposal           Proposal           @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  proposedByPerson   Person?            @relation("AmendmentProposer", fields: [proposedByPersonId], references: [id], onDelete: SetNull)
+  proposedByMember   Member?            @relation("AmendmentProposerMember", fields: [proposedByMemberId], references: [id], onDelete: SetNull)
+
+  @@index([proposalId])
+  @@index([status])
+  @@index([submittedAt])
+  @@map("amendments")
+}
+
+model CommitteeAssignment {
+  id                 String                    @id @default(uuid()) @db.Uuid
+  proposalId         String                    @db.Uuid
+  governanceBodyId   String                    @db.Uuid
+  assignedAt         DateTime                  @default(now()) @db.Timestamptz(6)
+  assignedByPersonId String                    @db.Uuid
+  completedAt        DateTime?                 @db.Timestamptz(6)
+  status             CommitteeAssignmentStatus @default(ASSIGNED)
+  createdAt          DateTime                  @default(now()) @db.Timestamptz(6)
+
+  proposal           Proposal                  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  governanceBody     GovernanceBody            @relation(fields: [governanceBodyId], references: [id], onDelete: Restrict)
+  assignedBy         Person                    @relation("CommitteeAssignedBy", fields: [assignedByPersonId], references: [id], onDelete: Restrict)
+
+  @@index([proposalId])
+  @@index([governanceBodyId])
+  @@index([status])
+  @@map("committee_assignments")
+}
+
+model Ballot {
+  id                 String             @id @default(uuid()) @db.Uuid
+  proposalId         String?            @db.Uuid
+  title              String
+  description        String?
+  state              BallotState        @default(DRAFT)
+  scheduledOpenAt    DateTime?          @db.Timestamptz(6)
+  openedAt           DateTime?          @db.Timestamptz(6)
+  scheduledCloseAt   DateTime?          @db.Timestamptz(6)
+  closedAt           DateTime?          @db.Timestamptz(6)
+  cancelledAt        DateTime?          @db.Timestamptz(6)
+  createdByPersonId  String             @db.Uuid
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  proposal           Proposal?          @relation(fields: [proposalId], references: [id], onDelete: SetNull)
+  createdBy          Person             @relation("BallotCreatedBy", fields: [createdByPersonId], references: [id], onDelete: Restrict)
+  eligibilitySnapshot BallotEligibilitySnapshot[]
+  votes              Vote[]
+  tallies            VoteTally[]
+  stateHistory       BallotStateHistory[]
+  certifications     CertificationRecord[]
+
+  @@index([proposalId])
+  @@index([state])
+  @@index([openedAt, closedAt])
+  @@index([scheduledOpenAt, scheduledCloseAt])
+  @@map("ballots")
+}
+
+model BallotEligibilitySnapshot {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ballotId           String             @db.Uuid
+  memberId           String             @db.Uuid
+  eligibilityStatus  EligibilityStatus
+  reason             String?
+  snapshotAt         DateTime           @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ballot             Ballot             @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  member             Member             @relation(fields: [memberId], references: [id], onDelete: Restrict)
+
+  @@unique([ballotId, memberId])
+  @@index([memberId])
+  @@index([eligibilityStatus])
+  @@map("ballot_eligibility_snapshots")
+}
+
+model Vote {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ballotId           String             @db.Uuid
+  memberId           String             @db.Uuid
+  personId           String?            @db.Uuid
+  choice             VoteChoice
+  castAt             DateTime           @db.Timestamptz(6)
+  recordedAt         DateTime           @default(now()) @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ballot             Ballot             @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  member             Member             @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  person             Person?            @relation(fields: [personId], references: [id], onDelete: SetNull)
+
+  @@unique([ballotId, memberId])
+  @@index([memberId])
+  @@index([castAt])
+  @@map("votes")
+}
+
+model VoteTally {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ballotId           String             @db.Uuid
+  yesCount           Int                @default(0)
+  noCount            Int                @default(0)
+  abstainCount       Int                @default(0)
+  totalCount         Int                @default(0)
+  quorumMet          Boolean            @default(false)
+  thresholdMet       Boolean            @default(false)
+  computedAt         DateTime           @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ballot             Ballot             @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@index([ballotId])
+  @@index([computedAt])
+  @@map("vote_tallies")
+}
+
+model BallotStateHistory {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ballotId           String             @db.Uuid
+  fromState          BallotState?
+  toState            BallotState
+  triggeredByPersonId String?           @db.Uuid
+  effectiveAt        DateTime           @db.Timestamptz(6)
+  reason             String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ballot             Ballot             @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+  triggeredBy        Person?            @relation("BallotStateChangedBy", fields: [triggeredByPersonId], references: [id], onDelete: SetNull)
+
+  @@index([ballotId])
+  @@index([effectiveAt])
+  @@map("ballot_state_history")
+}
+
+model GovernanceRule {
+  id                 String             @id @default(uuid()) @db.Uuid
+  code               String             @unique
+  name               String
+  ruleType           RuleType
+  description        String?
+  sourceReference    String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  versions           RuleVersion[]
+
+  @@index([ruleType])
+  @@map("governance_rules")
+}
+
+model RuleVersion {
+  id                 String             @id @default(uuid()) @db.Uuid
+  governanceRuleId   String             @db.Uuid
+  versionLabel       String
+  effectiveFrom      DateTime           @db.Timestamptz(6)
+  effectiveTo        DateTime?          @db.Timestamptz(6)
+  status             RuleVersionStatus  @default(DRAFT)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  governanceRule     GovernanceRule     @relation(fields: [governanceRuleId], references: [id], onDelete: Cascade)
+  parameters         RuleParameter[]
+  scopes             RuleScope[]
+
+  quorumCertifications     CertificationRecord[] @relation("CertificationQuorumRule")
+  thresholdCertifications  CertificationRecord[] @relation("CertificationThresholdRule")
+  certificationRuleUses    CertificationRecord[] @relation("CertificationCertificationRule")
+
+  @@unique([governanceRuleId, versionLabel])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([status])
+  @@map("rule_versions")
+}
+
+model RuleParameter {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ruleVersionId      String             @db.Uuid
+  key                String
+  valueString        String?
+  valueNumber        Float?
+  valueBoolean       Boolean?
+  valueJson          Json?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ruleVersion        RuleVersion        @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleVersionId, key])
+  @@index([key])
+  @@map("rule_parameters")
+}
+
+model RuleScope {
+  id                 String             @id @default(uuid()) @db.Uuid
+  ruleVersionId      String             @db.Uuid
+  scopeType          ScopeType
+  scopeId            String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  ruleVersion        RuleVersion        @relation(fields: [ruleVersionId], references: [id], onDelete: Cascade)
+
+  @@index([ruleVersionId])
+  @@index([scopeType, scopeId])
+  @@map("rule_scopes")
+}
+
+model CertificationRecord {
+  id                       String             @id @default(uuid()) @db.Uuid
+  ballotId                 String             @db.Uuid
+  status                   CertificationStatus @default(PENDING)
+  certifiedByPersonId      String?            @db.Uuid
+  certifiedAt              DateTime?          @db.Timestamptz(6)
+  rejectedAt               DateTime?          @db.Timestamptz(6)
+  notes                    String?
+  quorumRuleVersionId      String             @db.Uuid
+  thresholdRuleVersionId   String             @db.Uuid
+  certificationRuleVersionId String?          @db.Uuid
+  createdAt                DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime           @updatedAt @db.Timestamptz(6)
+
+  ballot                   Ballot             @relation(fields: [ballotId], references: [id], onDelete: Restrict)
+  certifiedBy              Person?            @relation("CertificationBy", fields: [certifiedByPersonId], references: [id], onDelete: SetNull)
+  quorumRuleVersion        RuleVersion        @relation("CertificationQuorumRule", fields: [quorumRuleVersionId], references: [id], onDelete: Restrict)
+  thresholdRuleVersion     RuleVersion        @relation("CertificationThresholdRule", fields: [thresholdRuleVersionId], references: [id], onDelete: Restrict)
+  certificationRuleVersion RuleVersion?       @relation("CertificationCertificationRule", fields: [certificationRuleVersionId], references: [id], onDelete: SetNull)
+  reviewNotes              CertificationReviewNote[]
+  ratifications            RatificationRecord[]
+
+  @@index([ballotId])
+  @@index([status])
+  @@index([certifiedByPersonId])
+  @@index([certifiedAt])
+  @@map("certification_records")
+}
+
+model CertificationReviewNote {
+  id                       String             @id @default(uuid()) @db.Uuid
+  certificationRecordId    String             @db.Uuid
+  reviewedByPersonId       String             @db.Uuid
+  noteType                 String
+  body                     String
+  createdAt                DateTime           @default(now()) @db.Timestamptz(6)
+
+  certificationRecord      CertificationRecord @relation(fields: [certificationRecordId], references: [id], onDelete: Cascade)
+  reviewedBy               Person             @relation("CertificationNoteBy", fields: [reviewedByPersonId], references: [id], onDelete: Restrict)
+
+  @@index([certificationRecordId])
+  @@index([reviewedByPersonId])
+  @@map("certification_review_notes")
+}
+
+model RatificationRecord {
+  id                       String             @id @default(uuid()) @db.Uuid
+  proposalId               String             @db.Uuid
+  certificationRecordId    String?            @db.Uuid
+  status                   RatificationStatus @default(PENDING)
+  ratifiedByPersonId       String?            @db.Uuid
+  ratifiedAt               DateTime?          @db.Timestamptz(6)
+  notes                    String?
+  createdAt                DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime           @updatedAt @db.Timestamptz(6)
+
+  proposal                 Proposal           @relation(fields: [proposalId], references: [id], onDelete: Restrict)
+  certificationRecord      CertificationRecord? @relation(fields: [certificationRecordId], references: [id], onDelete: SetNull)
+  ratifiedBy               Person?            @relation("RatificationBy", fields: [ratifiedByPersonId], references: [id], onDelete: SetNull)
+
+  @@index([proposalId])
+  @@index([certificationRecordId])
+  @@index([status])
+  @@map("ratification_records")
+}
+
+model OfficialRecord {
+  id                 String               @id @default(uuid()) @db.Uuid
+  recordType         String
+  title              String
+  summary            String?
+  sourceEntityType   String
+  sourceEntityId     String
+  status             OfficialRecordStatus @default(DRAFT)
+  officializedAt     DateTime?            @db.Timestamptz(6)
+  createdAt          DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime             @updatedAt @db.Timestamptz(6)
+
+  versions           RecordVersion[]
+  artifacts          RecordArtifact[]
+  supersededByLinks  RecordSupersession[] @relation("RecordSupersededBy")
+  supersedesLinks    RecordSupersession[] @relation("RecordSupersedes")
+  gazetteEntries     GazetteEntry[]
+
+  @@index([recordType, status])
+  @@index([sourceEntityType, sourceEntityId])
+  @@index([officializedAt])
+  @@map("official_records")
+}
+
+model RecordVersion {
+  id                 String             @id @default(uuid()) @db.Uuid
+  officialRecordId   String             @db.Uuid
+  versionNumber      Int
+  bodyMarkdown       String
+  changeSummary      String?
+  createdByPersonId  String?            @db.Uuid
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  officialRecord     OfficialRecord     @relation(fields: [officialRecordId], references: [id], onDelete: Cascade)
+  createdBy          Person?            @relation("RecordVersionAuthor", fields: [createdByPersonId], references: [id], onDelete: SetNull)
+
+  @@unique([officialRecordId, versionNumber])
+  @@index([createdByPersonId])
+  @@map("record_versions")
+}
+
+model RecordArtifact {
+  id                 String             @id @default(uuid()) @db.Uuid
+  officialRecordId   String             @db.Uuid
+  artifactType       RecordArtifactType
+  filename           String
+  mimeType           String
+  storageKey         String
+  checksum           String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  officialRecord     OfficialRecord     @relation(fields: [officialRecordId], references: [id], onDelete: Cascade)
+
+  @@index([officialRecordId])
+  @@index([artifactType])
+  @@map("record_artifacts")
+}
+
+model RecordSupersession {
+  id                 String             @id @default(uuid()) @db.Uuid
+  priorRecordId      String             @db.Uuid
+  supersedingRecordId String            @db.Uuid
+  reason             String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  priorRecord        OfficialRecord     @relation("RecordSupersedes", fields: [priorRecordId], references: [id], onDelete: Cascade)
+  supersedingRecord  OfficialRecord     @relation("RecordSupersededBy", fields: [supersedingRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([priorRecordId, supersedingRecordId])
+  @@index([priorRecordId])
+  @@index([supersedingRecordId])
+  @@map("record_supersessions")
+}
+
+model GazetteIssue {
+  id                 String             @id @default(uuid()) @db.Uuid
+  issueNumber        String?            @unique
+  title              String
+  publicationState   PublicationState   @default(DRAFT)
+  scheduledFor       DateTime?          @db.Timestamptz(6)
+  publishedAt        DateTime?          @db.Timestamptz(6)
+  createdByPersonId  String             @db.Uuid
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  createdBy          Person             @relation("GazetteIssueCreatedBy", fields: [createdByPersonId], references: [id], onDelete: Restrict)
+  entries            GazetteEntry[]
+
+  @@index([publicationState])
+  @@index([scheduledFor])
+  @@index([publishedAt])
+  @@map("gazette_issues")
+}
+
+model GazetteEntry {
+  id                 String             @id @default(uuid()) @db.Uuid
+  gazetteIssueId     String             @db.Uuid
+  officialRecordId   String             @db.Uuid
+  titleSnapshot      String
+  summarySnapshot    String?
+  publicationOrder   Int
+  publishedAt        DateTime?          @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  gazetteIssue       GazetteIssue       @relation(fields: [gazetteIssueId], references: [id], onDelete: Cascade)
+  officialRecord     OfficialRecord     @relation(fields: [officialRecordId], references: [id], onDelete: Restrict)
+
+  @@unique([gazetteIssueId, publicationOrder])
+  @@index([officialRecordId])
+  @@index([publishedAt])
+  @@map("gazette_entries")
+}
+
+model PublicRegisterEntry {
+  id                 String             @id @default(uuid()) @db.Uuid
+  registerType       String
+  sourceEntityType   String
+  sourceEntityId     String
+  displayTitle       String
+  displaySummary     String?
+  publicUrlSlug      String?            @unique
+  publicationState   PublicationState   @default(DRAFT)
+  publishedAt        DateTime?          @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  @@index([registerType])
+  @@index([sourceEntityType, sourceEntityId])
+  @@index([publicationState, publishedAt])
+  @@map("public_register_entries")
+}
+
+model EventLog {
+  id                 String             @id @default(uuid()) @db.Uuid
+  eventType          String
+  eventCategory      EventCategory      @default(DOMAIN)
+  entityType         String
+  entityId           String
+  actorPersonId      String?            @db.Uuid
+  correlationId      String?            @db.Uuid
+  causationId        String?            @db.Uuid
+  payloadJson        Json
+  metadataJson       Json?
+  occurredAt         DateTime           @db.Timestamptz(6)
+  recordedAt         DateTime           @default(now()) @db.Timestamptz(6)
+
+  actor              Person?            @relation(fields: [actorPersonId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, occurredAt])
+  @@index([eventCategory])
+  @@index([entityType, entityId])
+  @@index([actorPersonId])
+  @@index([correlationId])
+  @@map("event_log")
+}
+
+model AuditEvent {
+  id                 String             @id @default(uuid()) @db.Uuid
+  actionType         ActionType
+  entityType         String
+  entityId           String
+  actorPersonId      String?            @db.Uuid
+  authoritySourceType String?
+  authoritySourceId  String?
+  ruleVersionIdsJson Json?
+  summary            String?
+  occurredAt         DateTime           @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  actor              Person?            @relation(fields: [actorPersonId], references: [id], onDelete: SetNull)
+
+  @@index([actionType, occurredAt])
+  @@index([entityType, entityId])
+  @@index([actorPersonId])
+  @@map("audit_events")
+}
+
+model SecurityEvent {
+  id                 String             @id @default(uuid()) @db.Uuid
+  eventType          String
+  personId           String?            @db.Uuid
+  userAccountId      String?            @db.Uuid
+  ipAddress          String?
+  userAgent          String?
+  detailsJson        Json?
+  occurredAt         DateTime           @db.Timestamptz(6)
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  person             Person?            @relation(fields: [personId], references: [id], onDelete: SetNull)
+  userAccount        UserAccount?       @relation(fields: [userAccountId], references: [id], onDelete: SetNull)
+
+  @@index([eventType, occurredAt])
+  @@index([personId])
+  @@index([userAccountId])
+  @@map("security_events")
+}
+
+model ProposalListProjection {
+  proposalId         String             @id @db.Uuid
+  title              String
+  proposerName       String?
+  currentStage       ProposalStage
+  submittedAt        DateTime?          @db.Timestamptz(6)
+  voteStatus         String?
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([currentStage])
+  @@index([submittedAt])
+  @@map("projection_proposal_list")
+}
+
+model ProposalDetailProjection {
+  proposalId         String             @id @db.Uuid
+  title              String
+  currentStage       ProposalStage
+  currentVersionNumber Int?
+  latestBodySnapshot String?
+  committeeName      String?
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([currentStage])
+  @@map("projection_proposal_detail")
+}
+
+model BallotDashboardProjection {
+  ballotId           String             @id @db.Uuid
+  proposalId         String?            @db.Uuid
+  title              String
+  state              BallotState
+  openedAt           DateTime?          @db.Timestamptz(6)
+  closedAt           DateTime?          @db.Timestamptz(6)
+  participationRate  Float?
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([state])
+  @@index([openedAt, closedAt])
+  @@map("projection_ballot_dashboard")
+}
+
+model VoteTallyProjection {
+  ballotId           String             @id @db.Uuid
+  yesCount           Int                @default(0)
+  noCount            Int                @default(0)
+  abstainCount       Int                @default(0)
+  totalCount         Int                @default(0)
+  quorumMet          Boolean            @default(false)
+  thresholdMet       Boolean            @default(false)
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@map("projection_vote_tally")
+}
+
+model MembershipDirectoryProjection {
+  memberId           String             @id @db.Uuid
+  personName         String
+  membershipClassName String
+  membershipStatus   MembershipStatus
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([membershipStatus])
+  @@map("projection_membership_directory")
+}
+
+model OfficeholderRegistryProjection {
+  officeHolderId     String             @id @db.Uuid
+  officeName         String
+  personName         String
+  termStart          DateTime?          @db.Timestamptz(6)
+  termEnd            DateTime?          @db.Timestamptz(6)
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([termStart, termEnd])
+  @@map("projection_officeholder_registry")
+}
+
+model GazetteArchiveProjection {
+  gazetteIssueId     String             @id @db.Uuid
+  issueTitle         String
+  publishedAt        DateTime?          @db.Timestamptz(6)
+  entryCount         Int                @default(0)
+  updatedAt          DateTime           @default(now()) @db.Timestamptz(6)
+
+  @@index([publishedAt])
+  @@map("projection_gazette_archive")
+}
+
+model Notification {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  personId           String                     @db.Uuid
+  notificationType   NotificationType
+  title              String
+  body               String
+  deliveryStatus     NotificationDeliveryStatus @default(PENDING)
+  readAt             DateTime?                  @db.Timestamptz(6)
+  createdAt          DateTime                   @default(now()) @db.Timestamptz(6)
+
+  person             Person                     @relation(fields: [personId], references: [id], onDelete: Cascade)
+  deliveries         NotificationDelivery[]
+
+  @@index([personId])
+  @@index([deliveryStatus])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model NotificationDelivery {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  notificationId     String                     @db.Uuid
+  channel            NotificationChannel
+  status             NotificationDeliveryStatus @default(PENDING)
+  attemptedAt        DateTime?                  @db.Timestamptz(6)
+  deliveredAt        DateTime?                  @db.Timestamptz(6)
+  errorMessage       String?
+  actorPersonId      String?                    @db.Uuid
+  createdAt          DateTime                   @default(now()) @db.Timestamptz(6)
+
+  notification       Notification               @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  actor              Person?                    @relation("NotificationDeliveryActor", fields: [actorPersonId], references: [id], onDelete: SetNull)
+
+  @@index([notificationId])
+  @@index([status])
+  @@index([actorPersonId])
+  @@map("notification_deliveries")
+}
+
+model JobRecord {
+  id                 String             @id @default(uuid()) @db.Uuid
+  jobType            String
+  queueName          String
+  status             JobStatus          @default(PENDING)
+  payloadJson        Json
+  attemptCount       Int                @default(0)
+  scheduledFor       DateTime?          @db.Timestamptz(6)
+  startedAt          DateTime?          @db.Timestamptz(6)
+  finishedAt         DateTime?          @db.Timestamptz(6)
+  errorMessage       String?
+  createdAt          DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  @@index([queueName, status])
+  @@index([scheduledFor])
+  @@index([startedAt, finishedAt])
+  @@map("job_records")
+}
+
+model SystemSetting {
+  id                 String             @id @default(uuid()) @db.Uuid
+  key                String             @unique
+  valueJson          Json
+  updatedAt          DateTime           @updatedAt @db.Timestamptz(6)
+
+  @@map("system_settings")
+}

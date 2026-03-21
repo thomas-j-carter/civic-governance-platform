@@ -1,13 +1,44 @@
 # Ardtire Digital Governance Platform — Project Context
 
-The Ardtire Digital Governance Platform is a production-grade civic governance system intended to model constitutional governance as software. It provides deterministic, auditable, versioned institutional workflows for proposals, ballots, certifications, official records, and gazette publication.
+## Purpose
 
-This is an institutional operating system, not a generic CRUD app.
+The Ardtire Digital Governance Platform is a production-grade civic governance system designed to:
 
-## Core principles
-- explicit lifecycle transitions
-- permissioned mutations
-- auditability for all writes
-- rule-version binding for decisions
-- publication separated from certification
-- deterministic outcomes
+- model constitutional governance processes as software
+- provide deterministic, auditable, and versioned institutional workflows
+- enable proposal → deliberation → voting → certification → publication
+- serve as the canonical system of record for governance outcomes
+
+This is not a generic CRUD application.
+
+It is an **institutional operating system**.
+
+## Core Principles
+
+- All governance actions are explicit, permissioned, and auditable
+- All outcomes are versioned and tied to rule versions
+- Nothing becomes official without passing through formal lifecycle stages
+- Publication is explicit and separate from certification
+- The system is deterministic and replayable
+
+## Key Capabilities
+
+- Identity and membership management
+- Authority and delegation system
+- Governance bodies and offices
+- Proposal lifecycle management
+- Ballot and voting system
+- Certification of outcomes
+- Official record creation
+- Gazette-based publication system
+
+## System Philosophy
+
+The platform enforces a strict separation between:
+
+- Draft state
+- Certified state
+- Official state
+- Published state
+
+Each transition is explicit, guarded, and audited.

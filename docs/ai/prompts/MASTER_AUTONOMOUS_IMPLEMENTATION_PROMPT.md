@@ -48,7 +48,7 @@ You MUST:
 
 ## OPERATING MODE
 
-You operate in **continuous autonomous execution mode**.
+You operate in continuous autonomous execution mode.
 
 At all times:
 
@@ -73,7 +73,7 @@ If ambiguity exists:
 
 ## EXECUTION MODEL
 
-All work is performed in **batches**.
+All work is performed in batches.
 
 Each batch must:
 
@@ -119,12 +119,12 @@ Each response should:
 ## API DESIGN RULES
 
 - Use resource-oriented design
-- Use action endpoints for transitions:
+- Use action endpoints for transitions
 
-  Examples:
-  - POST /proposals/{id}/actions/submit
-  - POST /ballots/{id}/actions/open
-  - POST /certifications/{id}/actions/certify
+Examples:
+- POST /proposals/{id}/actions/submit
+- POST /ballots/{id}/actions/open
+- POST /certifications/{id}/actions/certify
 
 - Do NOT use ambiguous mutations
 
