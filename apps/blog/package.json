@@ -1,5 +1,5 @@
 {
-  "name": "@ardtire/gov-api",
+  "name": "@ardtire/blog",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -12,10 +12,7 @@
     "test:watch": "vitest",
     "clean": "rm -rf dist"
   },
-  "dependencies": {
-    "hono": "workspace:*",
-    "zod": "workspace:*"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "workspace:*",
     "tsx": "workspace:*",

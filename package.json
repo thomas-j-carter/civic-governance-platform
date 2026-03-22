@@ -18,6 +18,9 @@
     "build:cms": "pnpm --filter @ardtire/cms build",
     "build:gov-api": "pnpm --filter @ardtire/gov-api build",
 
+    "start:cms": "pnpm --filter @ardtire/cms start",
+    "start:gov-api": "pnpm --filter @ardtire/gov-api start",
+
     "preview:web": "pnpm --filter @ardtire/web preview",
 
     "typecheck": "pnpm -r --if-present typecheck",
@@ -27,6 +30,7 @@
 
     "cms:generate:types": "pnpm --filter @ardtire/cms generate:types",
     "cms:test:watch": "pnpm --filter @ardtire/cms test:watch",
+    "gov-api:test:watch": "pnpm --filter @ardtire/gov-api test:watch",
 
     "validate:repo": "python tools/repo-validator/validate_repo.py",
     "compile:context": "python tools/context-compiler/compile_context.py",
