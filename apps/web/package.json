@@ -1,0 +1,24 @@
+{
+  "name": "@ardtire/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm run typecheck",
+    "clean": "rm -rf dist .netlify"
+  },
+  "dependencies": {
+    "@tanstack/solid-start": "workspace:*",
+    "solid-js": "workspace:*"
+  },
+  "devDependencies": {
+    "@netlify/vite-plugin-tanstack-start": "workspace:*",
+    "typescript": "workspace:*",
+    "vite": "workspace:*",
+    "vite-plugin-solid": "workspace:*"
+  }
+}

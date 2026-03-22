@@ -13,7 +13,6 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "@ardtire/authz": "workspace:*",
     "@payloadcms/db-postgres": "latest",
     "@payloadcms/next": "latest",
     "@payloadcms/richtext-lexical": "latest",
