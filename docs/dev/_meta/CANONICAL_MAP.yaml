@@ -1,0 +1,131 @@
+version: 1
+last_updated: 2026-03-22
+
+rules:
+  canonical_status_values:
+    - draft
+    - review
+    - canonical
+    - superseded
+    - archived
+  visibility_values:
+    - internal
+    - public
+    - ai-context
+  public_promotion_requires:
+    - owner_approval
+    - public_safety_review
+    - editorial_review
+  generated_content_must_be_marked: true
+
+domains:
+  vision:
+    canonical_root: docs/dev/00-vision
+    canonical_docs:
+      mission: docs/dev/00-vision/mission-and-goals.md
+      scope: docs/dev/00-vision/scope-and-non-goals.md
+      constraints: docs/dev/00-vision/constraints.md
+      stakeholders: docs/dev/00-vision/stakeholders-and-users.md
+      success_metrics: docs/dev/00-vision/success-metrics.md
+
+  product:
+    canonical_root: docs/dev/01-product
+    canonical_docs:
+      information_architecture: docs/dev/01-product/information-architecture.md
+      route_map: docs/dev/01-product/route-map.md
+      user_journeys: docs/dev/01-product/user-journeys.md
+      feature_map: docs/dev/01-product/feature-map.md
+      content_ownership: docs/dev/01-product/content-ownership.md
+
+  domain:
+    canonical_root: docs/dev/02-domain
+    canonical_docs:
+      actor_model: docs/dev/02-domain/actor-model.md
+      authority_model: docs/dev/02-domain/authority-model.md
+      governance_model: docs/dev/02-domain/governance-model.md
+      membership_model: docs/dev/02-domain/membership-model.md
+      publication_model: docs/dev/02-domain/publication-model.md
+      records_model: docs/dev/02-domain/records-model.md
+      rule_versioning: docs/dev/02-domain/rule-versioning.md
+      state_machines: docs/dev/02-domain/state-machines.md
+
+  architecture:
+    canonical_root: docs/dev/03-architecture
+    canonical_docs:
+      system_context: docs/dev/03-architecture/system-context.md
+      bounded_contexts: docs/dev/03-architecture/bounded-contexts.md
+      identity_and_access: docs/dev/03-architecture/identity-and-access.md
+      database_strategy: docs/dev/03-architecture/database-strategy.md
+      deployment_topology: docs/dev/03-architecture/deployment-topology.md
+      security_architecture: docs/dev/03-architecture/security-architecture.md
+      request_lifecycle: docs/dev/03-architecture/request-lifecycle.md
+      search_strategy: docs/dev/03-architecture/search-strategy.md
+
+  decisions:
+    canonical_root: docs/dev/04-decisions
+    canonical_docs:
+      adr_index: docs/dev/04-decisions/ADR-INDEX.md
+
+  specs:
+    canonical_root: docs/dev/05-specs
+    canonical_docs:
+      spec_template: docs/dev/05-specs/SPEC-TEMPLATE.md
+
+  api:
+    canonical_root: docs/dev/06-api
+    canonical_docs:
+      overview: docs/dev/06-api/overview.md
+      conventions: docs/dev/06-api/conventions.md
+      versioning: docs/dev/06-api/versioning.md
+      errors: docs/dev/06-api/errors.md
+      openapi: docs/dev/06-api/openapi.yaml
+
+  runbooks:
+    canonical_root: docs/dev/07-runbooks
+    canonical_docs:
+      local_development: docs/dev/07-runbooks/local-development.md
+      deploy_api: docs/dev/07-runbooks/deploy-api.md
+      deploy_web: docs/dev/07-runbooks/deploy-web.md
+      deploy_cms: docs/dev/07-runbooks/deploy-cms.md
+      rollback_release: docs/dev/07-runbooks/rollback-release.md
+      incident_first_response: docs/dev/07-runbooks/incident-first-response.md
+
+  operations:
+    canonical_root: docs/dev/08-operations
+    canonical_docs:
+      environments: docs/dev/08-operations/environments.md
+      observability: docs/dev/08-operations/observability.md
+      incident_management: docs/dev/08-operations/incident-management.md
+      change_management: docs/dev/08-operations/change-management.md
+      service_level_objectives: docs/dev/08-operations/service-level-objectives.md
+      backups_and_recovery: docs/dev/08-operations/backups-and-recovery.md
+
+  ai_context:
+    canonical_root: docs/ai
+    canonical_docs:
+      project_context: docs/ai/PROJECT_CONTEXT.md
+      current_state_summary: docs/ai/CURRENT_STATE_SUMMARY.md
+      architecture_summary: docs/ai/ARCHITECTURE_SUMMARY.md
+      repo_blueprint: docs/ai/REPO_BLUEPRINT.md
+      source_of_truth_map: docs/ai/SOURCE_OF_TRUTH_MAP.md
+      file_implementation_order: docs/ai/FILE_IMPLEMENTATION_ORDER.md
+      known_gaps: docs/ai/KNOWN_GAPS.md
+      handoff_prompt: docs/ai/HANDOFF_PROMPT.md
+      continuation_prompt: docs/ai/CONTINUATION_PROMPT.md
+      ai_rules: docs/ai/AI_RULES.md
+
+public_promotion_candidates:
+  from_docs_dev:
+    - docs/dev/00-vision/mission-and-goals.md
+    - docs/dev/01-product/information-architecture.md
+    - docs/dev/01-product/route-map.md
+    - docs/dev/03-architecture/system-context.md
+    - docs/dev/06-api/overview.md
+    - docs/dev/10-changelog/unreleased.md
+
+explicitly_internal_only:
+  - docs/dev/07-runbooks/**
+  - docs/dev/08-operations/**
+  - docs/dev/03-architecture/security-architecture.md
+  - docs/dev/03-architecture/trust-boundaries.md
+  - docs/dev/06-api/openapi.yaml

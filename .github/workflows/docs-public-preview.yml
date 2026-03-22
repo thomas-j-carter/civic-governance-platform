@@ -1,0 +1,50 @@
+name: docs-public-preview
+
+on:
+  pull_request:
+    paths:
+      - "docs/docs/**"
+      - "docs/dev/**"
+      - ".github/workflows/docs-public-preview.yml"
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: docs/docs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install docs app dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate public docs content
+        run: pnpm validate
+
+      - name: Sync approved public docs from docs/dev
+        run: pnpm sync:public
+
+      - name: Generate public OpenAPI artifacts
+        run: pnpm generate:openapi
+
+      - name: Build Docusaurus site
+        run: pnpm build
+
+      - name: Upload preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-docs-preview
+          path: docs/docs/build

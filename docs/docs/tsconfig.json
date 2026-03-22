@@ -1,0 +1,11 @@
+{
+  "extends": "@docusaurus/module-type-aliases/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "types": ["node"]
+  },
+  "include": ["src", "docusaurus.config.ts", "sidebars.ts", "tina", "scripts"],
+  "exclude": [".docusaurus", "build"]
+}

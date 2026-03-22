@@ -1,0 +1,139 @@
+version: 1
+last_updated: 2026-03-22
+
+policy:
+  principle: >
+    Public documentation is a curated product. Internal documentation is not published
+    by default. Promotion from docs/dev to docs/docs must be explicit, reviewed, and safe.
+
+visibility_values:
+  - internal
+  - public
+  - ai-context
+
+status_values:
+  - draft
+  - review
+  - canonical
+  - superseded
+  - archived
+
+required_frontmatter:
+  all_managed_docs:
+    - title
+    - status
+    - visibility
+    - owner
+    - last_reviewed
+
+  public_candidate_docs:
+    - public_candidate
+
+promotion_rules:
+  default_behavior: deny
+  requires_explicit_opt_in: true
+  source_must_be_in_docs_dev: true
+  target_must_be_in_docs_docs_content: true
+
+promotion_requirements:
+  - source_doc_exists
+  - source_doc_not_archived
+  - source_doc_not_superseded
+  - source_visibility_allows_public
+  - source_public_candidate_true
+  - source_owner_approval
+  - docs_team_editorial_review
+  - security_review_if_sensitive
+  - target_frontmatter_valid
+  - internal_metadata_removed
+  - internal_links_removed_or_rewritten
+
+promotion_disqualifiers:
+  - visibility_internal_only
+  - path_matches_internal_only_rule
+  - missing_owner
+  - missing_last_reviewed
+  - missing_public_candidate
+  - contains_internal_secrets
+  - contains_operational_credentials
+  - contains_internal_urls_only
+  - contains_non_public_architecture_details_without_review
+
+path_rules:
+  explicitly_internal_only:
+    - docs/dev/07-runbooks/**
+    - docs/dev/08-operations/**
+    - docs/dev/infrastructure/**
+    - docs/dev/03-architecture/security-architecture.md
+    - docs/dev/03-architecture/trust-boundaries.md
+    - docs/dev/06-api/openapi.yaml
+
+  likely_public_candidates:
+    - docs/dev/00-vision/**
+    - docs/dev/01-product/**
+    - docs/dev/03-architecture/system-context.md
+    - docs/dev/06-api/overview.md
+    - docs/dev/10-changelog/**
+
+transforms:
+  remove_frontmatter_keys_on_promotion:
+    - visibility
+    - owner
+    - public_candidate
+    - last_reviewed
+    - supersedes
+    - internal_notes
+    - review_cycle_days
+
+  add_or_normalize_frontmatter_on_promotion:
+    status: published
+
+  rewrite_paths:
+    docs_dev_prefix: docs/dev
+    docs_docs_prefix: docs/docs/content
+
+review_matrix:
+  normal_public_doc:
+    approvals_required:
+      - source_owner
+      - docs_team
+
+  sensitive_public_doc:
+    approvals_required:
+      - source_owner
+      - docs_team
+      - security_team
+
+  api_public_doc:
+    approvals_required:
+      - source_owner
+      - docs_team
+      - platform_team
+
+generated_content:
+  generated_openapi_docs:
+    editable_by_hand: false
+    source_of_truth: docs/dev/06-api/openapi.yaml
+    output_root: docs/docs/generated/openapi
+
+  ai_context_docs:
+    editable_by_hand: true
+    caution: >
+      These documents are human-maintained summaries and must be periodically refreshed
+      against docs/dev and actual repository state.
+
+publishing_targets:
+  public_docs_site:
+    root: docs/docs
+    content_root: docs/docs/content
+    generated_root: docs/docs/generated
+
+workflow:
+  preferred_sequence:
+    - author_or_update_in_docs_dev
+    - review_internal_doc
+    - mark_public_candidate_true
+    - run_promotion_script
+    - editorial_review_in_docs_docs
+    - run_public_preview_build
+    - merge_and_publish

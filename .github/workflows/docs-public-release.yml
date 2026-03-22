@@ -1,0 +1,58 @@
+name: docs-public-release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/docs/**"
+      - "docs/dev/**"
+      - ".github/workflows/docs-public-release.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: docs/docs
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install docs app dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate
+        run: pnpm validate
+
+      - name: Sync public docs
+        run: pnpm sync:public
+
+      - name: Generate OpenAPI docs
+        run: pnpm generate:openapi
+
+      - name: Build site
+        run: pnpm build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-docs-build
+          path: docs/docs/build
+
+      - name: Deployment placeholder
+        run: |
+          echo "Replace this with your actual deployment step."
+          echo "Examples: rsync to server, S3 sync, Cloudflare Pages deploy, Netlify deploy, etc."

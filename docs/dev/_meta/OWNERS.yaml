@@ -1,0 +1,184 @@
+version: 1
+last_updated: 2026-03-22
+
+defaults:
+  fallback_owner: platform-team
+  require_owner_for_canonical: true
+  require_reviewers_for_public_promotion: true
+
+teams:
+  platform-team:
+    display_name: Platform Team
+    responsibilities:
+      - repo structure
+      - developer experience
+      - core architecture
+      - shared infrastructure
+      - CI/CD
+    contacts:
+      - engineering@your-domain.example
+
+  product-team:
+    display_name: Product Team
+    responsibilities:
+      - product requirements
+      - user journeys
+      - feature definitions
+      - roadmap
+    contacts:
+      - product@your-domain.example
+
+  governance-team:
+    display_name: Governance Team
+    responsibilities:
+      - governance models
+      - membership policy
+      - publication policy
+      - constitutional workflows
+    contacts:
+      - governance@your-domain.example
+
+  docs-team:
+    display_name: Documentation Team
+    responsibilities:
+      - public docs editorial review
+      - tutorial quality
+      - FAQ quality
+      - documentation IA
+    contacts:
+      - docs@your-domain.example
+
+  security-team:
+    display_name: Security Team
+    responsibilities:
+      - identity and access
+      - secrets handling
+      - threat boundaries
+      - internal/public review
+    contacts:
+      - security@your-domain.example
+
+  operations-team:
+    display_name: Operations Team
+    responsibilities:
+      - runbooks
+      - observability
+      - deployments
+      - incident response
+      - environments
+    contacts:
+      - ops@your-domain.example
+
+ownership:
+  docs/ai:
+    owner: platform-team
+    reviewers:
+      - platform-team
+    backup_owner: docs-team
+
+  docs/dev/00-vision:
+    owner: product-team
+    reviewers:
+      - product-team
+      - platform-team
+
+  docs/dev/01-product:
+    owner: product-team
+    reviewers:
+      - product-team
+      - docs-team
+
+  docs/dev/02-domain:
+    owner: governance-team
+    reviewers:
+      - governance-team
+      - platform-team
+
+  docs/dev/03-architecture:
+    owner: platform-team
+    reviewers:
+      - platform-team
+      - security-team
+
+  docs/dev/04-decisions:
+    owner: platform-team
+    reviewers:
+      - platform-team
+
+  docs/dev/05-specs:
+    owner: platform-team
+    reviewers:
+      - platform-team
+      - product-team
+
+  docs/dev/06-api:
+    owner: platform-team
+    reviewers:
+      - platform-team
+      - security-team
+
+  docs/dev/07-runbooks:
+    owner: operations-team
+    reviewers:
+      - operations-team
+      - platform-team
+
+  docs/dev/08-operations:
+    owner: operations-team
+    reviewers:
+      - operations-team
+      - security-team
+
+  docs/dev/09-adr:
+    owner: platform-team
+    reviewers:
+      - platform-team
+
+  docs/dev/10-changelog:
+    owner: platform-team
+    reviewers:
+      - platform-team
+      - docs-team
+
+  docs/dev/application:
+    owner: platform-team
+    reviewers:
+      - platform-team
+      - product-team
+
+  docs/dev/governance:
+    owner: governance-team
+    reviewers:
+      - governance-team
+      - docs-team
+
+  docs/dev/implementation:
+    owner: platform-team
+    reviewers:
+      - platform-team
+
+  docs/dev/infrastructure:
+    owner: operations-team
+    reviewers:
+      - operations-team
+      - security-team
+
+  docs/docs:
+    owner: docs-team
+    reviewers:
+      - docs-team
+      - product-team
+      - platform-team
+
+public_promotion_approvers:
+  required_from_source_owner: true
+  required_from_docs_team: true
+  required_from_security_team_when_sensitive: true
+
+sensitive_paths:
+  - docs/dev/03-architecture/security-architecture.md
+  - docs/dev/03-architecture/trust-boundaries.md
+  - docs/dev/06-api/openapi.yaml
+  - docs/dev/07-runbooks/**
+  - docs/dev/08-operations/**
+  - docs/dev/infrastructure/**

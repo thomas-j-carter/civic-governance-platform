@@ -1,0 +1,37 @@
+name: docs-ai-refresh-check
+
+on:
+  pull_request:
+    paths:
+      - "docs/ai/**"
+      - "docs/dev/**"
+      - ".github/workflows/docs-ai-refresh.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/ai/**"
+      - "docs/dev/**"
+      - ".github/workflows/docs-ai-refresh.yml"
+
+jobs:
+  ai-refresh-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check required AI continuity files
+        run: |
+          test -f docs/ai/README.md
+          test -f docs/ai/PROJECT_CONTEXT.md
+          test -f docs/ai/CURRENT_STATE_SUMMARY.md
+          test -f docs/ai/ARCHITECTURE_SUMMARY.md
+          test -f docs/ai/REPO_BLUEPRINT.md
+          test -f docs/ai/SOURCE_OF_TRUTH_MAP.md
+
+      - name: Placeholder freshness reminder
+        run: |
+          echo "This workflow is a guardrail, not a full semantic freshness validator."
+          echo "Later, add checks that compare docs/ai against docs/dev canonical docs and repo state."

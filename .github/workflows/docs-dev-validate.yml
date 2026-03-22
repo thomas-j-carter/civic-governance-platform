@@ -1,0 +1,61 @@
+name: docs-dev-validate
+
+on:
+  pull_request:
+    paths:
+      - "docs/dev/**"
+      - "docs/ai/**"
+      - ".github/workflows/docs-dev-validate.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/dev/**"
+      - "docs/ai/**"
+      - ".github/workflows/docs-dev-validate.yml"
+
+jobs:
+  validate-dev-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install root dependencies if package.json exists
+        run: |
+          if [ -f package.json ]; then
+            pnpm install --frozen-lockfile
+          else
+            echo "No root package.json found, skipping install"
+          fi
+
+      - name: Check meta files exist
+        run: |
+          test -f docs/dev/_meta/CANONICAL_MAP.yaml
+          test -f docs/dev/_meta/OWNERS.yaml
+          test -f docs/dev/_meta/PUBLISHING_RULES.yaml
+
+      - name: Basic markdown inventory
+        run: |
+          echo "Markdown files under docs/dev:"
+          find docs/dev -type f \( -name "*.md" -o -name "*.mdx" -o -name "*.yaml" -o -name "*.yml" \) | sort
+
+      - name: Fail if old AI-context subtree still exists
+        run: |
+          if [ -d docs/dev/09-ai-context ]; then
+            echo "docs/dev/09-ai-context still exists; move AI continuity docs to docs/ai"
+            exit 1
+          fi
+
+      - name: Placeholder for custom validation
+        run: |
+          echo "Add canonicality, frontmatter, broken-link, and ownership validation here."
