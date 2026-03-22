@@ -19,6 +19,74 @@ export function createGovClient(options: GovClientOptions) {
   }
 }
 
+
+export { createGovClient } from "./client/create-gov-client";
+export type { GovClient } from "./client/create-gov-client";
+
+export type { GovClientConfig, AccessTokenProvider } from "./client/config";
+
+export {
+  GovApiError,
+  isGovApiError,
+  toGovApiError,
+} from "./client/errors";
+
+export type {
+  ProblemDetails,
+  ValidationProblemDetails,
+} from "./client/errors";
+
+export type { Paginated } from "./utils/pagination";
+
+export type {
+  IdentityClient,
+  CurrentIdentityData,
+  AuthorityContextData,
+} from "./modules/identity";
+
+export type {
+  ProposalsClient,
+  ProposalType,
+  ProposalStage,
+  ProposalListItemDto,
+  ProposalDetailDto,
+  ProposalVersionDto,
+  AmendmentDto,
+  ListProposalsQuery,
+  CreateProposalDraftRequest,
+  CreateProposalVersionRequest,
+  SetCurrentProposalVersionRequest,
+  SubmitProposalRequest,
+  AssignCommitteeRequest,
+  CreateAmendmentRequest,
+} from "./modules/proposals";
+
+export type {
+  BallotsClient,
+  BallotState,
+  VoteChoice,
+  BallotListItemDto,
+  BallotDetailDto,
+  BallotEligibilityEntryDto,
+  VoteDto,
+  BallotTallyDto,
+  ListBallotsQuery,
+  CreateBallotRequest,
+  CastVoteRequest,
+} from "./modules/ballots";
+
+export type {
+  CertificationsClient,
+  CertificationStatus,
+  RatificationStatus,
+  CertificationDetailDto,
+  RatificationDetailDto,
+  CreateCertificationRequest,
+  RejectCertificationRequest,
+  CreateRatificationRequest,
+} from "./modules/certifications";
+
+
 export * from './agendas'
 export * from './amendments'
 export * from './governance-bodies'

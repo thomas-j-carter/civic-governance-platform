@@ -17,9 +17,5 @@
     "zod": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "workspace:*",
-    "tsx": "workspace:*",
-    "typescript": "workspace:*",
-    "vitest": "workspace:*"
   }
 }
